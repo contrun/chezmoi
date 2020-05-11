@@ -19,7 +19,6 @@ linters:
   - ineffassign
   - interfacer
   - misspell
-  - nakedret
   - prealloc
   - rowserrcheck
   - scopelint
@@ -42,6 +41,7 @@ linters:
   - gomnd
   - lll
   - maligned
+  - nakedret
   - nestif
   - testpackage
   - wsl
@@ -70,3 +70,9 @@ issues:
   - linters:
     - scopelint
     path: "_test\\.go"
+  - linters:
+    - deadcode
+    - unparam
+    - unused
+    - varcheck
+    path: v2/

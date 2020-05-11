@@ -1,0 +1,22 @@
+chezmoi managed
+cmpenv stdout golden/managed
+
+chezmoi --include=dirs managed 
+cmpenv stdout golden/managed-dirs
+
+chezmoi --include=files managed 
+cmpenv stdout golden/managed-files
+
+-- golden/managed --
+$HOMESLASH/.bashrc
+$HOMESLASH/.ssh
+$HOMESLASH/.ssh/config
+-- golden/managed-dirs --
+$HOMESLASH/.ssh
+-- golden/managed-files --
+$HOMESLASH/.bashrc
+$HOMESLASH/.ssh/config
+-- home/user/.local/share/chezmoi/dot_bashrc --
+# contents of .bashrc
+-- home/user/.local/share/chezmoi/dot_ssh/config --
+# contents of .ssh/config

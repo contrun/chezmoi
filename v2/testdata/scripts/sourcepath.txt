@@ -1,0 +1,15 @@
+chezmoi source-path
+stdout ${CHEZMOISOURCEDIR@R}
+
+chezmoi source-path $HOME${/}.bashrc
+env WANT=${CHEZMOISOURCEDIR}/dot_bashrc
+stdout ${WANT@R}
+
+! chezmoi source-path $HOME${/}.inputrc
+stdout 'not in source state'
+
+! chezmoi source-path $WORK${/}etc${/}passwd
+stdout 'not in destination directory'
+
+-- home/user/.local/share/chezmoi/dot_bashrc --
+# contents of .bashrc
