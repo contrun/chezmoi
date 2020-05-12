@@ -85,6 +85,7 @@ type Config struct {
 	CD              cdCmdConfig
 	Diff            diffCmdConfig
 	add             addCmdConfig
+	edit            editCmdConfig
 	executeTemplate executeTemplateCmdConfig
 	managed         managedCmdConfig
 
@@ -500,6 +501,11 @@ func (c *Config) run(dir, name string, args []string) error {
 	cmd.Stderr = c.Stdout
 	// FIXME use c.system
 	return cmd.Run()
+}
+
+func (c *Config) runEditor(args []string) error {
+	editorName, editorArgs := getEditor()
+	return c.run("", editorName, append(editorArgs, args...))
 }
 
 func (c *Config) marshal(data interface{}) error {

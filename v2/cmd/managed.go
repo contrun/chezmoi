@@ -98,8 +98,7 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 	sort.Strings(targetNames)
 	sb := &strings.Builder{}
 	for _, targetName := range targetNames {
-		sb.WriteString(filepath.FromSlash(filepath.Join(c.DestDir, targetName)))
-		sb.WriteString(eolStr)
+		sb.WriteString(filepath.FromSlash(filepath.Join(c.DestDir, targetName)) + eolStr)
 	}
 	return c.writeOutputString(sb.String())
 }

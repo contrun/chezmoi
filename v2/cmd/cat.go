@@ -58,7 +58,7 @@ func (c *Config) runCatCmd(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				return fmt.Errorf("%s: %w", targetName, err)
 			}
-			sb.WriteString(linkname)
+			sb.WriteString(linkname + eolStr)
 		default:
 			return fmt.Errorf("%s: not a file or symlink", targetName)
 		}
