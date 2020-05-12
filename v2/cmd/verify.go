@@ -32,7 +32,7 @@ func (c *Config) runVerifyCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if canarySystem.Mutated() {
-		if c.Debug {
+		if c.debug {
 			fmt.Println(strings.Join(canarySystem.Mutations(), " "))
 		}
 		return errExitFailure

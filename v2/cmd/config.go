@@ -49,28 +49,28 @@ type Config struct {
 	system     chezmoi.System
 	colored    bool
 
-	// Global options.
+	// Global configuration, settable in the config file.
 	SourceDir string
 	DestDir   string
 	Umask     permValue
-	DryRun    bool
-	Force     bool
 	Format    string
 	Follow    bool
-	Recursive bool
 	Remove    bool
-	Verbose   bool
 	Color     string
-	Output    string
-	Debug     bool
+	SourceVCS sourceVCSConfig
+	Data      map[string]interface{}
+	Template  templateConfig
 
-	// Global configuration.
-	SourceVCS     sourceVCSConfig
-	Data          map[string]interface{}
-	Template      templateConfig
+	// Global configuration, not settable in the config file.
+	debug         bool
+	dryRun        bool
+	force         bool
+	output        string
+	recursive     bool
+	verbose       bool
 	templateFuncs template.FuncMap
 
-	// Password manager configurations.
+	// Password manager configurations, settable in the config file.
 	Bitwarden     bitwardenCmdConfig
 	GenericSecret genericSecretCmdConfig
 	Gopass        gopassCmdConfig
@@ -81,9 +81,11 @@ type Config struct {
 	Pass          passCmdConfig
 	Vault         vaultCmdConfig
 
-	// Command configurations.
-	CD              cdCmdConfig
-	Diff            diffCmdConfig
+	// Command configurations, settable in the config file.
+	CD   cdCmdConfig
+	Diff diffCmdConfig
+
+	// Command configurations, not settable in the config file.
 	add             addCmdConfig
 	edit            editCmdConfig
 	executeTemplate executeTemplateCmdConfig
@@ -121,7 +123,7 @@ func newConfig(options ...configOption) *Config {
 		Umask:     permValue(getUmask()),
 		Color:     "auto",
 		Format:    "json",
-		Recursive: true,
+		recursive: true,
 		SourceVCS: sourceVCSConfig{
 			Command: "git",
 		},
@@ -185,7 +187,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
-		recursive:           c.Recursive,
+		recursive:           c.recursive,
 		mustBeInSourceState: true,
 	})
 	if err != nil {
@@ -292,7 +294,7 @@ func (c *Config) getDefaultTemplateData() (map[string]interface{}, error) {
 
 func (c *Config) getPersistentState(options *bolt.Options) (chezmoi.PersistentState, error) {
 	persistentStateFile := c.getPersistentStateFile()
-	if c.DryRun {
+	if c.dryRun {
 		if options == nil {
 			options = &bolt.Options{}
 		}
@@ -439,10 +441,10 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 		return initErr
 	}
 	c.system = chezmoi.NewRealSystem(c.fs, persistentState)
-	if c.DryRun {
+	if c.dryRun {
 		c.system = chezmoi.NewDryRunSystem(c.system)
 	}
-	if c.Debug {
+	if c.debug {
 		c.system = chezmoi.NewDebugSystem(c.system)
 	}
 	// FIXME verbose
@@ -525,11 +527,11 @@ func (c *Config) validateData() error {
 }
 
 func (c *Config) writeOutput(data []byte) error {
-	if c.Output == "" || c.Output == "-" {
+	if c.output == "" || c.output == "-" {
 		_, err := c.Stdout.Write(data)
 		return err
 	}
-	return c.fs.WriteFile(c.Output, data, 0o666)
+	return c.fs.WriteFile(c.output, data, 0o666)
 }
 
 func (c *Config) writeOutputString(data string) error {

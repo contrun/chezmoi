@@ -65,13 +65,13 @@ func init() {
 
 	persistentFlags.StringVarP(&config.configFile, "config", "c", getDefaultConfigFile(config.bds), "config file")
 
-	persistentFlags.BoolVarP(&config.DryRun, "dry-run", "n", false, "dry run")
+	persistentFlags.BoolVarP(&config.dryRun, "dry-run", "n", false, "dry run")
 	panicOnError(viper.BindPFlag("dry-run", persistentFlags.Lookup("dry-run")))
 
 	persistentFlags.BoolVar(&config.Follow, "follow", false, "follow symlinks")
 	panicOnError(viper.BindPFlag("follow", persistentFlags.Lookup("follow")))
 
-	persistentFlags.BoolVar(&config.Force, "force", config.Force, "force")
+	persistentFlags.BoolVar(&config.force, "force", config.force, "force")
 	panicOnError(viper.BindPFlag("force", persistentFlags.Lookup("force")))
 
 	persistentFlags.StringVar(&config.Format, "format", config.Format, "format ("+serializationFormatNamesStr()+")")
@@ -91,17 +91,17 @@ func init() {
 	panicOnError(rootCmd.MarkPersistentFlagDirname("destination"))
 	panicOnError(viper.BindPFlag("destination", persistentFlags.Lookup("destination")))
 
-	persistentFlags.BoolVarP(&config.Verbose, "verbose", "v", false, "verbose")
+	persistentFlags.BoolVarP(&config.verbose, "verbose", "v", false, "verbose")
 	panicOnError(viper.BindPFlag("verbose", persistentFlags.Lookup("verbose")))
 
 	persistentFlags.StringVar(&config.Color, "color", "auto", "colorize diffs")
 	panicOnError(viper.BindPFlag("color", persistentFlags.Lookup("color")))
 
-	persistentFlags.StringVarP(&config.Output, "output", "o", "", "output file")
+	persistentFlags.StringVarP(&config.output, "output", "o", "", "output file")
 	panicOnError(rootCmd.MarkPersistentFlagFilename("output"))
 	panicOnError(viper.BindPFlag("output", persistentFlags.Lookup("output")))
 
-	persistentFlags.BoolVar(&config.Debug, "debug", false, "write debug logs")
+	persistentFlags.BoolVar(&config.debug, "debug", false, "write debug logs")
 	panicOnError(viper.BindPFlag("debug", persistentFlags.Lookup("debug")))
 
 	cobra.OnInitialize(func() {

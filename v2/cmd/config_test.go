@@ -145,7 +145,7 @@ func withTestFS(fs vfs.FS) configOption {
 	return func(c *Config) {
 		c.fs = fs
 		// c.system = chezmoi.NewRealSystem() // FIXME
-		c.Verbose = true
+		c.verbose = true
 	}
 }
 

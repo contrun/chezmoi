@@ -44,14 +44,14 @@ PATH:
 		case err != nil:
 			return err
 		}
-		if !c.Force {
+		if !c.force {
 			choice, err := c.prompt(fmt.Sprintf("Remove %s", path), "ynqa")
 			if err != nil {
 				return err
 			}
 			switch choice {
 			case 'a':
-				c.Force = true
+				c.force = true
 			case 'n':
 				continue PATH
 			case 'q':

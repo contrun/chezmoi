@@ -42,7 +42,7 @@ func (c *Config) runRemoveCmd(cmd *cobra.Command, args []string) error {
 	for _, targetName := range targetNames {
 		destPath := path.Join(c.DestDir, targetName)
 		sourcePath := s.Entries[targetName].Path()
-		if !c.Force {
+		if !c.force {
 			choice, err := c.prompt(fmt.Sprintf("Remove %s and %s", destPath, sourcePath), "ynqa")
 			if err != nil {
 				return err
@@ -54,7 +54,7 @@ func (c *Config) runRemoveCmd(cmd *cobra.Command, args []string) error {
 			case 'q':
 				return nil
 			case 'a':
-				c.Force = true
+				c.force = true
 			}
 		}
 		if err := c.system.RemoveAll(destPath); err != nil && !os.IsNotExist(err) {
