@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -97,10 +98,8 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 	sort.Strings(targetNames)
 	sb := &strings.Builder{}
 	for _, targetName := range targetNames {
-		sb.WriteString(c.DestDir)
-		sb.WriteByte(chezmoi.PathSeparator)
-		sb.WriteString(targetName)
-		sb.WriteByte('\n')
+		sb.WriteString(filepath.FromSlash(filepath.Join(c.DestDir, targetName)))
+		sb.WriteString(eolStr)
 	}
 	return c.writeOutputString(sb.String())
 }

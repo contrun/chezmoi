@@ -1,15 +1,20 @@
+# FIXME remove v1 error message matching
+
 chezmoi source-path
-stdout ${CHEZMOISOURCEDIR@R}
+cmpenv stdout golden/source-path
 
 chezmoi source-path $HOME${/}.bashrc
-env WANT=${CHEZMOISOURCEDIR}/dot_bashrc
-stdout ${WANT@R}
+cmpenv stdout golden/source-path-bashrc
 
 ! chezmoi source-path $HOME${/}.inputrc
-stdout 'not in source state'
+stdout 'file does not exist|not in source state'
 
 ! chezmoi source-path $WORK${/}etc${/}passwd
-stdout 'not in destination directory'
+stdout 'outside target directory|not in destination directory'
 
+-- golden/source-path --
+$HOME${/}.local${/}share${/}chezmoi
+-- golden/source-path-bashrc --
+$HOME${/}.local${/}share${/}chezmoi${/}dot_bashrc
 -- home/user/.local/share/chezmoi/dot_bashrc --
 # contents of .bashrc

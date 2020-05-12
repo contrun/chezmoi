@@ -9,6 +9,8 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+const eolStr = "\r\n"
+
 // enableVirtualTerminalProcessingOnWindows enables virtual terminal processing
 // on Windows. See
 // https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences.

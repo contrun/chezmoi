@@ -1,6 +1,6 @@
-stop 'failing test' # FIXME
+[v2] stop # FIXME
 
-chmod 700 $HOME/.ssh
+[!windows] chmod 700 $HOME/.ssh
 
 # test that chezmoi verify succeeds
 chezmoi diff
@@ -31,8 +31,6 @@ mkdir $HOME/.ssh
 [!windows] chmod 700 $HOME/.ssh
 cp ${CHEZMOISOURCEDIR}/private_dot_ssh/config $HOME/.ssh/config
 chezmoi verify
-
-# FIXME remove test
 
 [windows] stop 'remaining tests use POSIX file modes'
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -25,7 +26,7 @@ func (c *Config) runSourcePathCmd(cmd *cobra.Command, args []string) error {
 	c.readOnly()
 
 	if len(args) == 0 {
-		return c.writeOutputString(c.SourceDir)
+		return c.writeOutputString(c.SourceDir + eolStr)
 	}
 
 	s, err := c.getSourceState()
@@ -43,8 +44,8 @@ func (c *Config) runSourcePathCmd(cmd *cobra.Command, args []string) error {
 
 	sb := &strings.Builder{}
 	for _, targetName := range targetNames {
-		sb.WriteString(s.Entries[targetName].Path())
-		sb.WriteByte('\n')
+		sb.WriteString(filepath.FromSlash(s.Entries[targetName].Path()))
+		sb.WriteString(eolStr)
 	}
 	return c.writeOutputString(sb.String())
 }

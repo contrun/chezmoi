@@ -1,0 +1,19 @@
+[v2] stop # FIXME
+
+edit ${CHEZMOISOURCEDIR}/dot_bashrc
+grep -count=1 '# edited' ${CHEZMOISOURCEDIR}/dot_bashrc
+
+chezmoi apply
+grep -count=1 '# edited' $HOME/.bashrc
+
+edit ${CHEZMOISOURCEDIR}/dot_bashrc
+grep -count=2 '# edited' ${CHEZMOISOURCEDIR}/dot_bashrc
+
+chezmoi forget $HOME${/}.bashrc
+! exists ${CHEZMOISOURCEDIR}/dot_bashrc
+
+chezmoi apply
+grep -count=1 '# edited' $HOME/.bashrc
+
+-- home/user/.local/share/chezmoi/dot_bashrc --
+# contents of .bashrc

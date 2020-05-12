@@ -5,7 +5,7 @@ chezmoi cat $HOME${/}.gitconfig
 cmp stdout golden/.gitconfig
 
 chezmoi cat $HOME${/}.symlink
-cmp stdout ${CHEZMOISOURCEDIR}/symlink_dot_symlink
+stdout 'target'
 
 ! chezmoi cat $HOME${/}.ssh
 stdout 'not a file or symlink'
@@ -26,4 +26,4 @@ stdout 'not a file or symlink'
 -- home/user/.local/share/chezmoi/private_dot_ssh/config --
 # contents of .ssh/config
 -- home/user/.local/share/chezmoi/symlink_dot_symlink --
-# contents of .symlink
+target

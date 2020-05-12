@@ -1,0 +1,11 @@
+[v2] stop # FIXME
+
+chezmoi purge --force
+! exists ${CHEZMOICONFIGDIR}
+! exists ${CHEZMOISOURCEDIR}
+
+-- home/user/.config/chezmoi/chezmoi.toml --
+[data]
+    email = "user@home.org"
+-- home/user/.local/share/chezmoi/dot_bashrc --
+# contents of .bashrc

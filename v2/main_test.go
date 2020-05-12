@@ -35,6 +35,8 @@ func TestChezmoi(t *testing.T) {
 			switch cond {
 			case "windows":
 				return runtime.GOOS == "windows", nil
+			case "v2":
+				return true, nil
 			default:
 				return false, fmt.Errorf("unknown condition: %s", cond)
 			}
