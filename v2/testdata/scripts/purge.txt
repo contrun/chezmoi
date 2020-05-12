@@ -1,5 +1,3 @@
-[v2] stop # FIXME
-
 chezmoi purge --force
 ! exists ${CHEZMOICONFIGDIR}
 ! exists ${CHEZMOISOURCEDIR}
