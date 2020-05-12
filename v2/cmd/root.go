@@ -77,7 +77,7 @@ func init() {
 	persistentFlags.StringVar(&config.Format, "format", config.Format, "format ("+serializationFormatNamesStr()+")")
 	panicOnError(viper.BindPFlag("format", persistentFlags.Lookup("format")))
 
-	persistentFlags.BoolVarP(&config.Recursive, "recursive", "r", config.Recursive, "recursive")
+	persistentFlags.BoolVarP(&config.recursive, "recursive", "r", config.recursive, "recursive")
 	panicOnError(viper.BindPFlag("recursive", persistentFlags.Lookup("recursive")))
 
 	persistentFlags.BoolVar(&config.Remove, "remove", false, "remove targets")
