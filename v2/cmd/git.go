@@ -15,6 +15,14 @@ var gitCmd = &cobra.Command{
 	},
 }
 
+type gitCmdConfig struct {
+	Command    string
+	Args       string
+	AutoAdd    bool
+	AutoCommit bool
+	AutoPush   bool
+}
+
 func init() {
 	rootCmd.AddCommand(gitCmd)
 }

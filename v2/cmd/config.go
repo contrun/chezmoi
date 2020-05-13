@@ -26,16 +26,9 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh/terminal"
 
+	"github.com/twpayne/chezmoi/internal/git"
 	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
 )
-
-type gitConfig struct {
-	Command    string
-	AutoCommit bool
-	AutoPush   bool
-	Init       []string
-	Pull       []string
-}
 
 type templateConfig struct {
 	Options []string
@@ -61,7 +54,7 @@ type Config struct {
 	Follow    bool
 	Remove    bool
 	Color     string
-	Git       gitConfig
+	Git       gitCmdConfig
 	Data      map[string]interface{}
 	Template  templateConfig
 
@@ -150,7 +143,7 @@ func newConfig(options ...configOption) (*Config, error) {
 		Color:      "auto",
 		Format:     "json",
 		recursive:  true,
-		Git: gitConfig{
+		Git: gitCmdConfig{
 			Command: "git",
 		},
 		Template: templateConfig{
@@ -235,6 +228,55 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	return nil
+}
+
+func (c *Config) autoAdd() (*git.Status, error) {
+	if err := c.run(c.SourceDir, c.Git.Command, []string{"add", "."}); err != nil {
+		return nil, err
+	}
+	output, err := c.cmdOutput(c.SourceDir, c.Git.Command, []string{"status", "--porcelain=v2"})
+	if err != nil {
+		return nil, err
+	}
+	return git.ParseStatusPorcelainV2(output)
+}
+
+func (c *Config) autoCommit(status *git.Status) error {
+	if status.Empty() {
+		return nil
+	}
+	commitMessageText, err := getAsset(commitMessageTemplateAsset)
+	if err != nil {
+		return err
+	}
+	commitMessageTmpl, err := template.New("commit_message").Funcs(c.templateFuncs).Parse(string(commitMessageText))
+	if err != nil {
+		return err
+	}
+	commitMessage := &strings.Builder{}
+	if err := commitMessageTmpl.Execute(commitMessage, status); err != nil {
+		return err
+	}
+	return c.run(c.SourceDir, c.Git.Command, []string{"commit", "--message", commitMessage.String()})
+}
+
+func (c *Config) autoPush(status *git.Status) error {
+	if status.Empty() {
+		return nil
+	}
+	return c.run(c.SourceDir, c.Git.Command, append([]string{"push"}))
+}
+
+func (c *Config) cmdOutput(dir, name string, args []string) ([]byte, error) {
+	cmd := exec.Command(name, args...)
+	if dir != "" {
+		var err error
+		cmd.Dir, err = c.fs.RawPath(dir)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cmd.Output() // FIXME use c.system
 }
 
 func (c *Config) getDefaultTemplateData() (map[string]interface{}, error) {
@@ -570,6 +612,27 @@ func (c *Config) persistentPostRunRootE(cmd *cobra.Command, args []string) error
 		}
 		if err != nil {
 			cmd.Printf("warning: %s: %v\n", c.configFile, err)
+		}
+	}
+
+	if getBoolAnnotation(cmd, modifiesSourceDirectory) {
+		var err error
+		var status *git.Status
+		if c.Git.AutoAdd || c.Git.AutoCommit || c.Git.AutoPush {
+			status, err = c.autoAdd()
+			if err != nil {
+				return err
+			}
+		}
+		if c.Git.AutoCommit || c.Git.AutoPush {
+			if err := c.autoCommit(status); err != nil {
+				return err
+			}
+		}
+		if c.Git.AutoPush {
+			if err := c.autoPush(status); err != nil {
+				return err
+			}
 		}
 	}
 
