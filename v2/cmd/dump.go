@@ -21,6 +21,8 @@ func init() {
 }
 
 func (c *Config) runDumpCmd(cmd *cobra.Command, args []string) error {
+	c.readOnly()
+
 	dataSystem := chezmoi.NewDataSystem()
 	if err := c.applyArgs(dataSystem, "", args); err != nil {
 		return err

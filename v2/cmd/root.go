@@ -3,14 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/twpayne/go-xdg/v3"
 )
 
 var config = newConfig()
@@ -40,90 +36,10 @@ var (
 )
 
 func init() {
-	var err error
-	workingDir, err = os.Getwd()
-	if err != nil {
+	if err := config.init(rootCmd); err != nil {
 		initErr = err
 		return
 	}
-	workingDir = filepath.ToSlash(workingDir)
-
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		initErr = err
-		return
-	}
-	homeDir = filepath.ToSlash(homeDir)
-
-	config.bds, err = xdg.NewBaseDirectorySpecification()
-	if err != nil {
-		initErr = err
-		return
-	}
-
-	persistentFlags := rootCmd.PersistentFlags()
-
-	persistentFlags.StringVarP(&config.configFile, "config", "c", getDefaultConfigFile(config.bds), "config file")
-
-	persistentFlags.BoolVarP(&config.dryRun, "dry-run", "n", false, "dry run")
-	panicOnError(viper.BindPFlag("dry-run", persistentFlags.Lookup("dry-run")))
-
-	persistentFlags.BoolVar(&config.Follow, "follow", false, "follow symlinks")
-	panicOnError(viper.BindPFlag("follow", persistentFlags.Lookup("follow")))
-
-	persistentFlags.BoolVar(&config.force, "force", config.force, "force")
-	panicOnError(viper.BindPFlag("force", persistentFlags.Lookup("force")))
-
-	persistentFlags.StringVar(&config.Format, "format", config.Format, "format ("+serializationFormatNamesStr()+")")
-	panicOnError(viper.BindPFlag("format", persistentFlags.Lookup("format")))
-
-	persistentFlags.BoolVarP(&config.recursive, "recursive", "r", config.recursive, "recursive")
-	panicOnError(viper.BindPFlag("recursive", persistentFlags.Lookup("recursive")))
-
-	persistentFlags.BoolVar(&config.Remove, "remove", false, "remove targets")
-	panicOnError(viper.BindPFlag("remove", persistentFlags.Lookup("remove")))
-
-	persistentFlags.StringVarP(&config.SourceDir, "source", "S", getDefaultSourceDir(config.bds), "source directory")
-	panicOnError(rootCmd.MarkPersistentFlagDirname("source"))
-	panicOnError(viper.BindPFlag("source", persistentFlags.Lookup("source")))
-
-	persistentFlags.StringVarP(&config.DestDir, "destination", "D", homeDir, "destination directory")
-	panicOnError(rootCmd.MarkPersistentFlagDirname("destination"))
-	panicOnError(viper.BindPFlag("destination", persistentFlags.Lookup("destination")))
-
-	persistentFlags.BoolVarP(&config.verbose, "verbose", "v", false, "verbose")
-	panicOnError(viper.BindPFlag("verbose", persistentFlags.Lookup("verbose")))
-
-	persistentFlags.StringVar(&config.Color, "color", "auto", "colorize diffs")
-	panicOnError(viper.BindPFlag("color", persistentFlags.Lookup("color")))
-
-	persistentFlags.StringVarP(&config.output, "output", "o", "", "output file")
-	panicOnError(rootCmd.MarkPersistentFlagFilename("output"))
-	panicOnError(viper.BindPFlag("output", persistentFlags.Lookup("output")))
-
-	persistentFlags.BoolVar(&config.debug, "debug", false, "write debug logs")
-	panicOnError(viper.BindPFlag("debug", persistentFlags.Lookup("debug")))
-
-	cobra.OnInitialize(func() {
-		_, err := os.Stat(config.configFile)
-		switch {
-		case err == nil:
-			viper.SetConfigFile(config.configFile)
-			config.err = viper.ReadInConfig()
-			if config.err == nil {
-				config.err = viper.Unmarshal(&config)
-			}
-			if config.err == nil {
-				config.err = config.validateData()
-			}
-			if config.err != nil {
-				rootCmd.Printf("warning: %s: %v\n", config.configFile, config.err)
-			}
-		case os.IsNotExist(err):
-		default:
-			initErr = err
-		}
-	})
 }
 
 // Execute executes the root command.

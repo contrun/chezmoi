@@ -42,10 +42,13 @@ type templateConfig struct {
 
 // A Config represents a configuration.
 type Config struct {
+	homeDir    string
+	workingDir string
+	bds        *xdg.BaseDirectorySpecification
+
 	configFile string
 	err        error
 	fs         vfs.FS
-	bds        *xdg.BaseDirectorySpecification
 	system     chezmoi.System
 	colored    bool
 
@@ -407,6 +410,87 @@ func (c *Config) getTemplateData() (map[string]interface{}, error) {
 	return data, nil
 }
 
+func (c *Config) init(rootCmd *cobra.Command) error {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	c.homeDir = filepath.ToSlash(homeDir)
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	c.workingDir = filepath.ToSlash(workingDir)
+
+	c.bds, err = xdg.NewBaseDirectorySpecification()
+	if err != nil {
+		return err
+	}
+
+	persistentFlags := rootCmd.PersistentFlags()
+
+	persistentFlags.StringVar(&c.Color, "color", c.Color, "colorize diffs")
+	persistentFlags.StringVarP(&c.DestDir, "destination", "D", homeDir, "destination directory")
+	persistentFlags.BoolVar(&c.Follow, "follow", c.Follow, "follow symlinks")
+	persistentFlags.StringVar(&c.Format, "format", c.Format, "format ("+serializationFormatNamesStr()+")")
+	persistentFlags.BoolVar(&c.Remove, "remove", c.Remove, "remove targets")
+	persistentFlags.StringVarP(&c.SourceDir, "source", "S", getDefaultSourceDir(c.bds), "source directory")
+	for _, key := range []string{
+		"color",
+		"destination",
+		"follow",
+		"format",
+		"remove",
+		"source",
+	} {
+		if err := viper.BindPFlag(key, persistentFlags.Lookup(key)); err != nil {
+			return err
+		}
+	}
+
+	persistentFlags.StringVarP(&c.configFile, "config", "c", getDefaultConfigFile(c.bds), "config file")
+	persistentFlags.BoolVarP(&c.dryRun, "dry-run", "n", c.dryRun, "dry run")
+	persistentFlags.BoolVar(&c.force, "force", c.force, "force")
+	persistentFlags.BoolVarP(&c.recursive, "recursive", "r", c.recursive, "recursive")
+	persistentFlags.BoolVarP(&c.verbose, "verbose", "v", c.verbose, "verbose")
+	persistentFlags.StringVarP(&c.output, "output", "o", c.output, "output file")
+	persistentFlags.BoolVar(&c.debug, "debug", c.debug, "write debug logs")
+
+	for _, err := range []error{
+		rootCmd.MarkPersistentFlagDirname("destination"),
+		rootCmd.MarkPersistentFlagFilename("output"),
+		rootCmd.MarkPersistentFlagDirname("source"),
+	} {
+		if err != nil {
+			return err
+		}
+	}
+
+	cobra.OnInitialize(func() {
+		_, err := os.Stat(c.configFile)
+		switch {
+		case err == nil:
+			viper.SetConfigFile(c.configFile)
+			c.err = viper.ReadInConfig()
+			if c.err == nil {
+				c.err = viper.Unmarshal(&config)
+			}
+			if c.err == nil {
+				c.err = c.validateData()
+			}
+			if c.err != nil {
+				rootCmd.Printf("warning: %s: %v\n", c.configFile, c.err)
+			}
+		case os.IsNotExist(err):
+		default:
+			initErr = err
+		}
+	})
+
+	return nil
+}
+
 func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error {
 	if colored, err := strconv.ParseBool(c.Color); err == nil {
 		c.colored = colored
@@ -523,7 +607,7 @@ func (c *Config) marshal(data interface{}) error {
 }
 
 func (c *Config) validateData() error {
-	return validateKeys(config.Data, identifierRegexp)
+	return validateKeys(c.Data, identifierRegexp)
 }
 
 func (c *Config) writeOutput(data []byte) error {
