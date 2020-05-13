@@ -29,12 +29,12 @@ import (
 	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
 )
 
-type sourceVCSConfig struct {
+type gitConfig struct {
 	Command    string
 	AutoCommit bool
 	AutoPush   bool
-	Init       interface{}
-	Pull       interface{}
+	Init       []string
+	Pull       []string
 }
 
 type templateConfig struct {
@@ -61,7 +61,7 @@ type Config struct {
 	Follow    bool
 	Remove    bool
 	Color     string
-	SourceVCS sourceVCSConfig
+	Git       gitConfig
 	Data      map[string]interface{}
 	Template  templateConfig
 
@@ -150,7 +150,7 @@ func newConfig(options ...configOption) (*Config, error) {
 		Color:      "auto",
 		Format:     "json",
 		recursive:  true,
-		SourceVCS: sourceVCSConfig{
+		Git: gitConfig{
 			Command: "git",
 		},
 		Template: templateConfig{
