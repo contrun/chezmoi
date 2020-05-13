@@ -181,16 +181,16 @@ func TestSourceStateApplyAll(t *testing.T) {
 			require.NoError(t, err)
 			defer cleanup()
 
-			s := newTestRealSystem(fs)
+			system := newTestRealSystem(fs)
 			sourceStateOptions := []SourceStateOption{
-				WithSystem(s),
+				WithSystem(system),
 				WithSourcePath("/home/user/.local/share/chezmoi"),
 			}
 			sourceStateOptions = append(sourceStateOptions, tc.sourceStateOptions...)
-			ss := NewSourceState(sourceStateOptions...)
-			require.NoError(t, ss.Read())
-			require.NoError(t, ss.Evaluate())
-			require.NoError(t, ss.ApplyAll(s, vfst.DefaultUmask, "/home/user"))
+			s := NewSourceState(sourceStateOptions...)
+			require.NoError(t, s.Read())
+			require.NoError(t, s.Evaluate())
+			require.NoError(t, s.ApplyAll(system, vfst.DefaultUmask, "/home/user"))
 
 			vfst.RunTests(t, fs, "", tc.tests...)
 		})
@@ -531,18 +531,18 @@ func TestSourceStateRead(t *testing.T) {
 				WithSourcePath("/home/user/.local/share/chezmoi"),
 			}
 			sourceStateOptions = append(sourceStateOptions, tc.sourceStateOptions...)
-			ss := NewSourceState(sourceStateOptions...)
-			err = ss.Read()
+			s := NewSourceState(sourceStateOptions...)
+			err = s.Read()
 			if tc.expectedError != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectedError, err.Error())
 				return
 			}
 			require.NoError(t, err)
-			require.NoError(t, ss.Evaluate())
+			require.NoError(t, s.Evaluate())
 			require.NoError(t, tc.expectedSourceState.Evaluate())
-			ss.s = nil
-			assert.Equal(t, tc.expectedSourceState, ss)
+			s.system = nil
+			assert.Equal(t, tc.expectedSourceState, s)
 		})
 	}
 }
@@ -662,14 +662,14 @@ func TestSourceStateRemove(t *testing.T) {
 			require.NoError(t, err)
 			defer cleanup()
 
-			ss := NewSourceState(
+			s := NewSourceState(
 				WithSystem(newTestRealSystem(fs)),
 				WithSourcePath("/home/user/.local/share/chezmoi"),
 			)
-			require.NoError(t, ss.Read())
-			require.NoError(t, ss.Evaluate())
+			require.NoError(t, s.Read())
+			require.NoError(t, s.Evaluate())
 
-			require.NoError(t, ss.Remove(newTestRealSystem(fs), "/home/user"))
+			require.NoError(t, s.Remove(newTestRealSystem(fs), "/home/user"))
 
 			vfst.RunTests(t, fs, "", tc.tests)
 		})

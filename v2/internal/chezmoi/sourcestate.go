@@ -19,7 +19,7 @@ import (
 // A SourceState is a source state.
 type SourceState struct {
 	Entries         map[string]SourceStateEntry
-	s               System
+	system          System
 	sourcePath      string
 	umask           os.FileMode
 	encryptionTool  EncryptionTool
@@ -37,50 +37,50 @@ type SourceStateOption func(*SourceState)
 
 // WithEncryptionTool set the encryption tool.
 func WithEncryptionTool(encryptionTool EncryptionTool) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.encryptionTool = encryptionTool
+	return func(s *SourceState) {
+		s.encryptionTool = encryptionTool
 	}
 }
 
 // WithSourcePath sets the source path.
 func WithSourcePath(sourcePath string) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.sourcePath = sourcePath
+	return func(s *SourceState) {
+		s.sourcePath = sourcePath
 	}
 }
 
 // WithSystem sets the system.
-func WithSystem(s System) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.s = s
+func WithSystem(system System) SourceStateOption {
+	return func(s *SourceState) {
+		s.system = system
 	}
 }
 
 // WithTemplateData sets the template data.
 func WithTemplateData(templateData map[string]interface{}) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.templateData = templateData
+	return func(s *SourceState) {
+		s.templateData = templateData
 	}
 }
 
 // WithTemplateFuncs sets the template functions.
 func WithTemplateFuncs(templateFuncs template.FuncMap) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.templateFuncs = templateFuncs
+	return func(s *SourceState) {
+		s.templateFuncs = templateFuncs
 	}
 }
 
 // WithTemplateOptions sets the template options.
 func WithTemplateOptions(templateOptions []string) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.templateOptions = templateOptions
+	return func(s *SourceState) {
+		s.templateOptions = templateOptions
 	}
 }
 
 // WithUmask sets the umask.
 func WithUmask(umask os.FileMode) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.umask = umask
+	return func(s *SourceState) {
+		s.umask = umask
 	}
 }
 
@@ -101,12 +101,12 @@ func NewSourceState(options ...SourceStateOption) *SourceState {
 	return s
 }
 
-// Add adds sourceStateEntry to ss.
+// Add adds sourceStateEntry to s.
 func (s *SourceState) Add() error {
 	return nil // FIXME
 }
 
-// ApplyAll updates targetDir in fs to match ss.
+// ApplyAll updates targetDir in fs to match s.
 func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir string) error {
 	for _, targetName := range s.sortedTargetNames() {
 		if err := s.ApplyOne(system, umask, targetDir, targetName); err != nil {
@@ -116,7 +116,7 @@ func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir strin
 	return nil
 }
 
-// ApplyOne updates targetName in targetDir on fs to match ss using s.
+// ApplyOne updates targetName in targetDir on fs to match s using s.
 func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targetName string) error {
 	targetPath := path.Join(targetDir, targetName)
 	destStateEntry, err := NewDestStateEntry(system, targetPath)
@@ -200,7 +200,7 @@ func (s *SourceState) MergeTemplateData(templateData map[string]interface{}) {
 
 // Read reads a source state from sourcePath.
 func (s *SourceState) Read() error {
-	_, err := s.s.Stat(s.sourcePath)
+	_, err := s.system.Stat(s.sourcePath)
 	switch {
 	case os.IsNotExist(err):
 		return nil
@@ -211,7 +211,7 @@ func (s *SourceState) Read() error {
 	// Read all source entries.
 	allSourceStateEntries := make(map[string][]SourceStateEntry)
 	sourceDirPrefix := filepath.ToSlash(s.sourcePath) + PathSeparatorStr
-	if err := vfs.Walk(s.s, s.sourcePath, func(sourcePath string, info os.FileInfo, err error) error {
+	if err := vfs.Walk(s.system, s.sourcePath, func(sourcePath string, info os.FileInfo, err error) error {
 		sourcePath = filepath.ToSlash(sourcePath)
 		if err != nil {
 			return err
@@ -297,7 +297,7 @@ func (s *SourceState) Read() error {
 		return err
 	}
 
-	// Populate ss.sourceEntries with the unique source entry for each target.
+	// Populate s.Entries with the unique source entry for each target.
 	for targetName, sourceEntries := range allSourceStateEntries {
 		s.Entries[targetName] = sourceEntries[0]
 	}
@@ -381,7 +381,7 @@ func (s *SourceState) addTemplateData(sourcePath string) error {
 	if !ok {
 		return fmt.Errorf("%s: unknown format", sourcePath)
 	}
-	data, err := s.s.ReadFile(sourcePath)
+	data, err := s.system.ReadFile(sourcePath)
 	if err != nil {
 		return fmt.Errorf("%s: %w", sourcePath, err)
 	}
@@ -395,14 +395,14 @@ func (s *SourceState) addTemplateData(sourcePath string) error {
 
 func (s *SourceState) addTemplatesDir(templateDir string) error {
 	templateDirPrefix := filepath.ToSlash(templateDir) + PathSeparatorStr
-	return vfs.Walk(s.s, templateDir, func(templatePath string, info os.FileInfo, err error) error {
+	return vfs.Walk(s.system, templateDir, func(templatePath string, info os.FileInfo, err error) error {
 		templatePath = filepath.ToSlash(templatePath)
 		if err != nil {
 			return err
 		}
 		switch {
 		case info.Mode().IsRegular():
-			contents, err := s.s.ReadFile(templatePath)
+			contents, err := s.system.ReadFile(templatePath)
 			if err != nil {
 				return err
 			}
@@ -431,7 +431,7 @@ func (s *SourceState) addTemplatesDir(templateDir string) error {
 // minimum version if it contains a more recent version than the current minimum
 // version.
 func (s *SourceState) addVersionFile(sourcePath string) error {
-	data, err := s.s.ReadFile(sourcePath)
+	data, err := s.system.ReadFile(sourcePath)
 	if err != nil {
 		return err
 	}
@@ -446,7 +446,7 @@ func (s *SourceState) addVersionFile(sourcePath string) error {
 }
 
 func (s *SourceState) executeTemplate(path string) ([]byte, error) {
-	data, err := s.s.ReadFile(path)
+	data, err := s.system.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -475,7 +475,7 @@ func (s *SourceState) newSourceStateDir(sourcePath string, dirAttributes DirAttr
 func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileAttributes) *SourceStateFile {
 	lazyContents := &lazyContents{
 		contentsFunc: func() ([]byte, error) {
-			contents, err := s.s.ReadFile(sourcePath)
+			contents, err := s.system.ReadFile(sourcePath)
 			if err != nil {
 				return nil, err
 			}
