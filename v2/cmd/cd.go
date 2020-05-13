@@ -14,7 +14,7 @@ var cdCmd = &cobra.Command{
 	RunE:    config.runCDCmd,
 	Annotations: map[string]string{
 		doesNotRequireValidConfig: "true",
-		modifiesSourceDirectory:   "true",
+		requiresSourceDirectory:   "true",
 	},
 }
 
@@ -28,10 +28,6 @@ func init() {
 }
 
 func (c *Config) runCDCmd(cmd *cobra.Command, args []string) error {
-	if err := c.ensureSourceDirectory(); err != nil {
-		return err
-	}
-
 	shellCommand := c.CD.Command
 	if shellCommand == "" {
 		shellCommand, _ = shell.CurrentUserShell()

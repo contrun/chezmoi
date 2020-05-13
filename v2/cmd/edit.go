@@ -11,7 +11,7 @@ var editCmd = &cobra.Command{
 	Example: getExample("edit"),
 	RunE:    config.runEditCmd,
 	Annotations: map[string]string{
-		modifiesSourceDirectory: "true",
+		requiresSourceDirectory: "true",
 	},
 }
 

@@ -15,6 +15,8 @@ const (
 	modifiesConfigFile           = "chezmoi_annotation_modifies_config_file"
 	modifiesDestinationDirectory = "chezmoi_annotation_modifies_destination_directory"
 	modifiesSourceDirectory      = "chezmoi_annotation_modifies_source_directory"
+	requiresConfigDirectory      = "chezmoi_annotation_requires_config_directory"
+	requiresSourceDirectory      = "chezmoi_annotation_requires_source_directory"
 )
 
 var config = mustNewConfig()
@@ -29,18 +31,17 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:               "chezmoi",
-	Short:             "Manage your dotfiles across multiple machines, securely",
-	SilenceErrors:     true,
-	SilenceUsage:      true,
-	PersistentPreRunE: config.persistentPreRunRootE,
+	Use:                "chezmoi",
+	Short:              "Manage your dotfiles across multiple machines, securely",
+	SilenceErrors:      true,
+	SilenceUsage:       true,
+	PersistentPreRunE:  config.persistentPreRunRootE,
+	PersistentPostRunE: config.persistentPostRunRootE,
 }
 
 var (
 	errExitFailure = errors.New("")
-
-	workingDir string
-	initErr    error
+	initErr        error
 )
 
 func init() {
@@ -118,7 +119,7 @@ func markRemainingZshCompPositionalArgumentsAsFiles(cmd *cobra.Command, from int
 func mustGetLongHelp(command string) string {
 	help, ok := helps[command]
 	if !ok {
-		panic(fmt.Sprintf("no long help for %s", command))
+		panic(fmt.Sprintf("%s: no long help", command))
 	}
 	return help.long
 }

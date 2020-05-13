@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/twpayne/go-vfs"
+	vfsafero "github.com/twpayne/go-vfsafero"
 	"github.com/twpayne/go-xdg/v3"
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh/terminal"
@@ -141,6 +142,7 @@ func newConfig(options ...configOption) (*Config, error) {
 		homeDir:    filepath.ToSlash(homeDir),
 		workingDir: filepath.ToSlash(workingDir),
 		bds:        bds,
+		fs:         vfs.OSFS,
 		configFile: getDefaultConfigFile(bds),
 		DestDir:    filepath.ToSlash(homeDir),
 		SourceDir:  getDefaultSourceDir(bds),
@@ -233,26 +235,6 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	return nil
-}
-
-func (c *Config) ensureSourceDirectory() error {
-	info, err := c.fs.Stat(c.SourceDir)
-	switch {
-	case err == nil && info.IsDir():
-		if chezmoi.POSIXFileModes && info.Mode()&os.ModePerm&0o77 != 0 {
-			return c.system.Chmod(c.SourceDir, 0o700&^os.FileMode(c.Umask))
-		}
-		return nil
-	case os.IsNotExist(err):
-		if err := vfs.MkdirAll(c.system, filepath.Dir(c.SourceDir), 0o777&^os.FileMode(c.Umask)); err != nil {
-			return err
-		}
-		return c.system.Mkdir(c.SourceDir, 0o700&^os.FileMode(c.Umask))
-	case err == nil:
-		return fmt.Errorf("%s: not a directory", c.SourceDir)
-	default:
-		return err
-	}
 }
 
 func (c *Config) getDefaultTemplateData() (map[string]interface{}, error) {
@@ -363,7 +345,7 @@ func (c *Config) getSourceState() (*chezmoi.SourceState, error) {
 
 func (c *Config) getTargetName(arg string) (string, error) {
 	if !filepath.IsAbs(arg) {
-		arg = filepath.Join(workingDir, arg)
+		arg = filepath.Join(c.workingDir, arg)
 	}
 	arg = filepath.ToSlash(filepath.Clean(arg))
 	destDirPrefix := c.DestDir + chezmoi.PathSeparatorStr
@@ -502,6 +484,33 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 		}
 	}
 
+	if getBoolAnnotation(cmd, requiresConfigDirectory) {
+		if err := vfs.MkdirAll(c.fs, filepath.Dir(c.configFile), 0o777&^os.FileMode(c.Umask)); err != nil {
+			return err
+		}
+	}
+
+	if getBoolAnnotation(cmd, requiresSourceDirectory) {
+		info, err := c.fs.Stat(c.SourceDir)
+		switch {
+		case err == nil && info.IsDir():
+			if chezmoi.POSIXFileModes && info.Mode()&os.ModePerm&0o77 != 0 {
+				if err := c.fs.Chmod(c.SourceDir, 0o700&^os.FileMode(c.Umask)); err != nil {
+					return err
+				}
+			}
+		case os.IsNotExist(err):
+			if err := vfs.MkdirAll(c.fs, filepath.Dir(c.SourceDir), 0o777&^os.FileMode(c.Umask)); err != nil {
+				return err
+			}
+			if err := c.fs.Mkdir(c.SourceDir, 0o700&^os.FileMode(c.Umask)); err != nil {
+				return err
+			}
+		case err == nil:
+			return fmt.Errorf("%s: not a directory", c.SourceDir)
+		}
+	}
+
 	if colored, err := strconv.ParseBool(c.Color); err == nil {
 		c.colored = colored
 	} else {
@@ -529,15 +538,12 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 		}
 	}
 
-	c.fs = vfs.OSFS
 	persistentState, err := c.getPersistentState(nil)
 	if err != nil {
 		return initErr
 	}
 	c.system = chezmoi.NewRealSystem(c.fs, persistentState)
-	if !getBoolAnnotation(cmd, modifiesConfigFile) &&
-		!getBoolAnnotation(cmd, modifiesDestinationDirectory) &&
-		!getBoolAnnotation(cmd, modifiesSourceDirectory) {
+	if !getBoolAnnotation(cmd, modifiesDestinationDirectory) && !getBoolAnnotation(cmd, modifiesSourceDirectory) {
 		c.system = chezmoi.NewReadOnlySystem(c.system)
 	}
 	if c.dryRun {
@@ -548,20 +554,26 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 	}
 	// FIXME verbose
 
-	info, err := c.fs.Stat(c.SourceDir)
-	switch {
-	case err == nil && !info.IsDir():
-		return fmt.Errorf("%s: not a directory", c.SourceDir)
-	case err == nil:
-		if chezmoi.POSIXFileModes && info.Mode()&os.ModePerm&0o77 != 0 {
-			cmd.Printf("%s: not private, but should be\n", c.SourceDir)
-		}
-	case !os.IsNotExist(err):
-		return err
-	}
-
 	// Apply any fixes for snap, if needed.
 	return c.snapFix()
+}
+
+func (c *Config) persistentPostRunRootE(cmd *cobra.Command, args []string) error {
+	if getBoolAnnotation(cmd, modifiesConfigFile) {
+		// Warn the user of any errors reading the config file.
+		v := viper.New()
+		v.SetFs(vfsafero.NewAferoFS(c.fs))
+		v.SetConfigFile(c.configFile)
+		err := v.ReadInConfig()
+		if err == nil {
+			err = v.Unmarshal(&Config{})
+		}
+		if err != nil {
+			cmd.Printf("warning: %s: %v\n", c.configFile, err)
+		}
+	}
+
+	return nil
 }
 
 //nolint:unparam
