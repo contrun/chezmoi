@@ -10,7 +10,7 @@ import (
 func TestSecretFunc(t *testing.T) {
 	t.Parallel()
 
-	c, args := getSecretTestConfig()
+	c, args := getSecretTestConfig(t)
 
 	var value interface{}
 	assert.NotPanics(t, func() {
@@ -23,7 +23,7 @@ func TestSecretFunc(t *testing.T) {
 func TestSecretJSONFunc(t *testing.T) {
 	t.Parallel()
 
-	c, args := getSecretJSONTestConfig()
+	c, args := getSecretJSONTestConfig(t)
 
 	var value interface{}
 	assert.NotPanics(t, func() {

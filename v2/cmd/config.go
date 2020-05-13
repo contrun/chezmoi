@@ -121,12 +121,33 @@ var (
 )
 
 // newConfig creates a new Config with the given options.
-func newConfig(options ...configOption) *Config {
+func newConfig(options ...configOption) (*Config, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	bds, err := xdg.NewBaseDirectorySpecification()
+	if err != nil {
+		return nil, err
+	}
+
 	c := &Config{
-		Umask:     permValue(getUmask()),
-		Color:     "auto",
-		Format:    "json",
-		recursive: true,
+		homeDir:    filepath.ToSlash(homeDir),
+		workingDir: filepath.ToSlash(workingDir),
+		bds:        bds,
+		configFile: getDefaultConfigFile(bds),
+		DestDir:    filepath.ToSlash(homeDir),
+		SourceDir:  getDefaultSourceDir(bds),
+		Umask:      permValue(getUmask()),
+		Color:      "auto",
+		Format:     "json",
+		recursive:  true,
 		SourceVCS: sourceVCSConfig{
 			Command: "git",
 		},
@@ -165,6 +186,14 @@ func newConfig(options ...configOption) *Config {
 	}
 	for _, option := range options {
 		option(c)
+	}
+	return c, nil
+}
+
+func mustNewConfig(options ...configOption) *Config {
+	c, err := newConfig(options...)
+	if err != nil {
+		panic(err)
 	}
 	return c
 }
@@ -411,31 +440,14 @@ func (c *Config) getTemplateData() (map[string]interface{}, error) {
 }
 
 func (c *Config) init(rootCmd *cobra.Command) error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	c.homeDir = filepath.ToSlash(homeDir)
-
-	workingDir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	c.workingDir = filepath.ToSlash(workingDir)
-
-	c.bds, err = xdg.NewBaseDirectorySpecification()
-	if err != nil {
-		return err
-	}
-
 	persistentFlags := rootCmd.PersistentFlags()
 
 	persistentFlags.StringVar(&c.Color, "color", c.Color, "colorize diffs")
-	persistentFlags.StringVarP(&c.DestDir, "destination", "D", homeDir, "destination directory")
+	persistentFlags.StringVarP(&c.DestDir, "destination", "D", c.DestDir, "destination directory")
 	persistentFlags.BoolVar(&c.Follow, "follow", c.Follow, "follow symlinks")
 	persistentFlags.StringVar(&c.Format, "format", c.Format, "format ("+serializationFormatNamesStr()+")")
 	persistentFlags.BoolVar(&c.Remove, "remove", c.Remove, "remove targets")
-	persistentFlags.StringVarP(&c.SourceDir, "source", "S", getDefaultSourceDir(c.bds), "source directory")
+	persistentFlags.StringVarP(&c.SourceDir, "source", "S", c.SourceDir, "source directory")
 	for _, key := range []string{
 		"color",
 		"destination",
@@ -449,7 +461,7 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 		}
 	}
 
-	persistentFlags.StringVarP(&c.configFile, "config", "c", getDefaultConfigFile(c.bds), "config file")
+	persistentFlags.StringVarP(&c.configFile, "config", "c", c.configFile, "config file")
 	persistentFlags.BoolVarP(&c.dryRun, "dry-run", "n", c.dryRun, "dry run")
 	persistentFlags.BoolVar(&c.force, "force", c.force, "force")
 	persistentFlags.BoolVarP(&c.recursive, "recursive", "r", c.recursive, "recursive")

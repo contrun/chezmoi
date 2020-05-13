@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	vfs "github.com/twpayne/go-vfs"
 	xdg "github.com/twpayne/go-xdg/v3"
 
@@ -77,14 +78,16 @@ func TestValidateKeys(t *testing.T) {
 	}
 }
 
-func newTestConfig(fs vfs.FS, options ...configOption) *Config {
-	return newConfig(append(
+func newTestConfig(t *testing.T, fs vfs.FS, options ...configOption) *Config {
+	c, err := newConfig(append(
 		[]configOption{
 			withTestFS(fs),
 			withTestUser("user"),
 		},
 		options...,
 	)...)
+	require.NoError(t, err)
+	return c
 }
 
 func withAddCmdConfig(add addCmdConfig) configOption {

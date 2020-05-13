@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var config = newConfig()
+var config = mustNewConfig()
 
 // Version information.
 var (

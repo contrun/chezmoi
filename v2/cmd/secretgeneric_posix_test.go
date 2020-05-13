@@ -3,23 +3,31 @@
 package cmd
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
 )
 
-func getSecretTestConfig() (*Config, []string) {
-	return newConfig(
+func getSecretTestConfig(t *testing.T) (*Config, []string) {
+	c, err := newConfig(
 		withSystem(chezmoi.NewNullSystem()),
 		withGenericSecretCmdConfig(genericSecretCmdConfig{
 			Command: "date",
 		}),
-	), []string{"+%Y-%M-%DT%H:%M:%SZ"}
+	)
+	require.NoError(t, err)
+	return c, []string{"+%Y-%M-%DT%H:%M:%SZ"}
 }
 
-func getSecretJSONTestConfig() (*Config, []string) {
-	return newConfig(
+func getSecretJSONTestConfig(t *testing.T) (*Config, []string) {
+	c, err := newConfig(
 		withSystem(chezmoi.NewNullSystem()),
 		withGenericSecretCmdConfig(genericSecretCmdConfig{
 			Command: "date",
 		}),
-	), []string{`+{"date":"%Y-%M-%DT%H:%M:%SZ"}`}
+	)
+	require.NoError(t, err)
+	return c, []string{`+{"date":"%Y-%M-%DT%H:%M:%SZ"}`}
 }
