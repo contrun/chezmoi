@@ -1,4 +1,4 @@
-package cmd
+package chezmoi
 
 // A Format is a serialization format.
 type Format interface {

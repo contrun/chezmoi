@@ -1,3 +1,3 @@
-package cmd
+package chezmoi
 
 var _ Format = JSONFormat

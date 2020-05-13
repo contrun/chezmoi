@@ -681,7 +681,7 @@ func (c *Config) runEditor(args []string) error {
 }
 
 func (c *Config) marshal(data interface{}) error {
-	format, ok := Formats[strings.ToLower(c.Format)]
+	format, ok := chezmoi.Formats[strings.ToLower(c.Format)]
 	if !ok {
 		return fmt.Errorf("unknown format: %s", c.Format)
 	}
@@ -759,8 +759,8 @@ func panicOnError(err error) {
 }
 
 func serializationFormatNamesStr() string {
-	names := make([]string, 0, len(Formats))
-	for name := range Formats {
+	names := make([]string, 0, len(chezmoi.Formats))
+	for name := range chezmoi.Formats {
 		names = append(names, strings.ToLower(name))
 	}
 	sort.Strings(names)

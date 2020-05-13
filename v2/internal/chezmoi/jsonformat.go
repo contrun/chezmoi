@@ -1,4 +1,4 @@
-package cmd
+package chezmoi
 
 import (
 	"encoding/json"
