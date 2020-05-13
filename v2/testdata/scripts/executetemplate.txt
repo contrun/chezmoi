@@ -1,8 +1,59 @@
+# test that templates with no external dependencies work
 chezmoi execute-template '{{ "output" }}'
 stdout output
 
+# test that partial templates work
 chezmoi execute-template '{{ template "partial" }}'
 stdout partial-output
 
+# test that template data are read from .chezmoidata.json
+chezmoi execute-template '{{ .json.key }}'
+stdout json
+
+# test that template data are read from .chezmoidata.toml
+chezmoi execute-template '{{ .toml.key }}'
+stdout toml
+
+# test that template data are read from .chezmoidata.yaml
+chezmoi execute-template '{{ .yaml.key }}'
+stdout yaml
+
+# test that the last .chezmoidata.<format> file read wins
+chezmoi execute-template '{{ .chezmoidata.last }}'
+stdout yaml
+
+# test that the config file wins over .chezmoidata.<format>
+chezmoi execute-template '{{ .global.last }}'
+stdout chezmoi.toml
+
+-- home/user/.config/chezmoi/chezmoi.toml --
+[global]
+  last = "chezmoi.toml"
+-- home/user/.local/share/chezmoi/.chezmoidata.json --
+{
+  "chezmoidata": {
+    "last": "json"
+  },
+  "global": {
+    "last": ".chezmoidata.json"
+  },
+  "json": {
+    "key": "json"
+  }
+}
+-- home/user/.local/share/chezmoi/.chezmoidata.toml --
+[chezmoidata]
+  last = "toml"
+[global]
+  last = ".chezmoidata.toml"
+[toml]
+  key = "toml"
+-- home/user/.local/share/chezmoi/.chezmoidata.yaml --
+chezmoidata:
+  last: yaml
+global:
+  last: .chezmoidata.yaml
+yaml:
+  key: yaml
 -- home/user/.local/share/chezmoi/.chezmoitemplates/partial --
 partial-output

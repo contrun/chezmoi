@@ -1,6 +1,7 @@
 package chezmoi
 
 import (
+	"bytes"
 	"encoding/json"
 	"strings"
 )
@@ -10,15 +11,19 @@ type jsonFormat struct{}
 // JSONFormat is the JSON serialization format.
 var JSONFormat jsonFormat
 
+func (jsonFormat) Decode(data []byte, value interface{}) error {
+	return json.NewDecoder(bytes.NewBuffer(data)).Decode(value)
+}
+
 func (jsonFormat) Name() string {
 	return "json"
 }
 
-func (jsonFormat) Marshal(data interface{}) ([]byte, error) {
+func (jsonFormat) Marshal(value interface{}) ([]byte, error) {
 	sb := &strings.Builder{}
 	e := json.NewEncoder(sb)
 	e.SetIndent("", "  ")
-	if err := e.Encode(data); err != nil {
+	if err := e.Encode(value); err != nil {
 		return nil, err
 	}
 	return []byte(sb.String()), nil

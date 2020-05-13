@@ -126,7 +126,7 @@ func TestSourceStateApplyAll(t *testing.T) {
 				},
 			},
 			sourceStateOptions: []SourceStateOption{
-				WithTemplateData(map[string]interface{}{
+				WithPostTemplateData(map[string]interface{}{
 					"email": "john.smith@company.com",
 				}),
 			},
@@ -164,7 +164,7 @@ func TestSourceStateApplyAll(t *testing.T) {
 				},
 			},
 			sourceStateOptions: []SourceStateOption{
-				WithTemplateData(map[string]interface{}{
+				WithPostTemplateData(map[string]interface{}{
 					"os": "linux",
 				}),
 			},

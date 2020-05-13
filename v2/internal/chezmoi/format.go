@@ -2,7 +2,8 @@ package chezmoi
 
 // A Format is a serialization format.
 type Format interface {
-	Marshal(data interface{}) ([]byte, error)
+	Decode(data []byte, value interface{}) error
+	Marshal(value interface{}) ([]byte, error)
 	Name() string
 	Unmarshal(data []byte) (interface{}, error)
 }

@@ -18,18 +18,21 @@ import (
 
 // A SourceState is a source state.
 type SourceState struct {
-	Entries         map[string]SourceStateEntry
-	s               System
-	sourcePath      string
-	umask           os.FileMode
-	encryptionTool  EncryptionTool
-	ignore          *PatternSet
-	minVersion      *semver.Version
-	remove          *PatternSet
-	templateData    interface{}
-	templateFuncs   template.FuncMap
-	templateOptions []string
-	templates       map[string]*template.Template
+	Entries            map[string]SourceStateEntry
+	s                  System
+	sourcePath         string
+	umask              os.FileMode
+	encryptionTool     EncryptionTool
+	ignore             *PatternSet
+	minVersion         *semver.Version
+	remove             *PatternSet
+	preTemplateData    map[string]interface{}
+	readTemplateData   map[string]interface{}
+	postTemplateData   map[string]interface{}
+	mergedTemplateData map[string]interface{}
+	templateFuncs      template.FuncMap
+	templateOptions    []string
+	templates          map[string]*template.Template
 }
 
 // A SourceStateOption sets an option on a source state.
@@ -39,6 +42,20 @@ type SourceStateOption func(*SourceState)
 func WithEncryptionTool(encryptionTool EncryptionTool) SourceStateOption {
 	return func(ss *SourceState) {
 		ss.encryptionTool = encryptionTool
+	}
+}
+
+// WithPreTemplateData sets the pre template data.
+func WithPreTemplateData(preTemplateData map[string]interface{}) SourceStateOption {
+	return func(ss *SourceState) {
+		ss.preTemplateData = preTemplateData
+	}
+}
+
+// WithPostTemplateData sets the pre template data.
+func WithPostTemplateData(postTemplateData map[string]interface{}) SourceStateOption {
+	return func(ss *SourceState) {
+		ss.postTemplateData = postTemplateData
 	}
 }
 
@@ -53,13 +70,6 @@ func WithSourcePath(sourcePath string) SourceStateOption {
 func WithSystem(s System) SourceStateOption {
 	return func(ss *SourceState) {
 		ss.s = s
-	}
-}
-
-// WithTemplateData sets the template data.
-func WithTemplateData(templateData interface{}) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.templateData = templateData
 	}
 }
 
@@ -87,12 +97,14 @@ func WithUmask(umask os.FileMode) SourceStateOption {
 // NewSourceState creates a new source state with the given options.
 func NewSourceState(options ...SourceStateOption) *SourceState {
 	s := &SourceState{
-		Entries:         make(map[string]SourceStateEntry),
-		umask:           DefaultUmask,
-		encryptionTool:  &nullEncryptionTool{},
-		ignore:          NewPatternSet(),
-		remove:          NewPatternSet(),
-		templateOptions: DefaultTemplateOptions,
+		Entries:            make(map[string]SourceStateEntry),
+		umask:              DefaultUmask,
+		encryptionTool:     &nullEncryptionTool{},
+		ignore:             NewPatternSet(),
+		remove:             NewPatternSet(),
+		templateOptions:    DefaultTemplateOptions,
+		readTemplateData:   make(map[string]interface{}),
+		mergedTemplateData: make(map[string]interface{}),
 	}
 	for _, option := range options {
 		option(s)
@@ -155,6 +167,24 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 	return nil
 }
 
+// Evaluate evaluates every target state entry in s.
+func (s *SourceState) Evaluate() error {
+	for _, targetName := range s.sortedTargetNames() {
+		sourceStateEntry := s.Entries[targetName]
+		if err := sourceStateEntry.Evaluate(); err != nil {
+			return err
+		}
+		targetStateEntry, err := sourceStateEntry.TargetStateEntry()
+		if err != nil {
+			return err
+		}
+		if err := targetStateEntry.Evaluate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // ExecuteTemplateData returns the result of executing template data.
 func (s *SourceState) ExecuteTemplateData(name string, data []byte) ([]byte, error) {
 	tmpl, err := template.New(name).Option(s.templateOptions...).Funcs(s.templateFuncs).Parse(string(data))
@@ -168,7 +198,7 @@ func (s *SourceState) ExecuteTemplateData(name string, data []byte) ([]byte, err
 		}
 	}
 	output := &bytes.Buffer{}
-	if err = tmpl.ExecuteTemplate(output, name, s.templateData); err != nil {
+	if err = tmpl.ExecuteTemplate(output, name, s.TemplateData()); err != nil {
 		return nil, err
 	}
 	return output.Bytes(), nil
@@ -176,6 +206,18 @@ func (s *SourceState) ExecuteTemplateData(name string, data []byte) ([]byte, err
 
 // Read reads a source state from sourcePath in fs.
 func (s *SourceState) Read() error {
+	_, err := s.s.Stat(s.sourcePath)
+	switch {
+	case os.IsNotExist(err):
+		mergedTemplateData := make(map[string]interface{})
+		recursiveMerge(mergedTemplateData, s.preTemplateData)
+		recursiveMerge(mergedTemplateData, s.postTemplateData)
+		s.mergedTemplateData = mergedTemplateData
+		return nil
+	case err != nil:
+		return err
+	}
+
 	// Read all source entries.
 	allSourceStateEntries := make(map[string][]SourceStateEntry)
 	sourceDirPrefix := filepath.ToSlash(s.sourcePath) + PathSeparatorStr
@@ -191,6 +233,8 @@ func (s *SourceState) Read() error {
 		sourceDirName, sourceName := path.Split(relPath)
 		targetDirName := getTargetDirName(sourceDirName)
 		switch {
+		case strings.HasPrefix(info.Name(), dataName):
+			return s.addTemplateData(sourcePath)
 		case info.Name() == ignoreName:
 			return s.addPatterns(s.ignore, sourcePath, sourceDirName)
 		case info.Name() == removeName:
@@ -240,7 +284,6 @@ func (s *SourceState) Read() error {
 
 	// Checking for duplicate source entries with the same target name. Iterate
 	// over the target names in order so that any error is deterministic.
-	var err error
 	targetNames := make([]string, 0, len(allSourceStateEntries))
 	for targetName := range allSourceStateEntries {
 		targetNames = append(targetNames, targetName)
@@ -268,6 +311,14 @@ func (s *SourceState) Read() error {
 	for targetName, sourceEntries := range allSourceStateEntries {
 		s.Entries[targetName] = sourceEntries[0]
 	}
+
+	// Merge template data.
+	mergedTemplateData := map[string]interface{}{}
+	recursiveMerge(mergedTemplateData, s.preTemplateData)
+	recursiveMerge(mergedTemplateData, s.readTemplateData)
+	recursiveMerge(mergedTemplateData, s.postTemplateData)
+	s.mergedTemplateData = mergedTemplateData
+
 	return nil
 }
 
@@ -303,22 +354,9 @@ func (s *SourceState) Remove(system System, targetDir string) error {
 	return nil
 }
 
-// Evaluate evaluates every target state entry in s.
-func (s *SourceState) Evaluate() error {
-	for _, targetName := range s.sortedTargetNames() {
-		sourceStateEntry := s.Entries[targetName]
-		if err := sourceStateEntry.Evaluate(); err != nil {
-			return err
-		}
-		targetStateEntry, err := sourceStateEntry.TargetStateEntry()
-		if err != nil {
-			return err
-		}
-		if err := targetStateEntry.Evaluate(); err != nil {
-			return err
-		}
-	}
-	return nil
+// TemplateData returns s's template data.
+func (s *SourceState) TemplateData() map[string]interface{} {
+	return s.mergedTemplateData
 }
 
 func (s *SourceState) addPatterns(patternSet *PatternSet, sourcePath, relPath string) error {
@@ -350,6 +388,25 @@ func (s *SourceState) addPatterns(patternSet *PatternSet, sourcePath, relPath st
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("%s: %w", sourcePath, err)
 	}
+	return nil
+}
+
+func (s *SourceState) addTemplateData(sourcePath string) error {
+	_, name := path.Split(sourcePath)
+	suffix := strings.TrimPrefix(name, dataName+".")
+	format, ok := Formats[strings.ToLower(suffix)]
+	if !ok {
+		return fmt.Errorf("%s: unknown format", sourcePath)
+	}
+	data, err := s.s.ReadFile(sourcePath)
+	if err != nil {
+		return fmt.Errorf("%s: %w", sourcePath, err)
+	}
+	var templateData map[string]interface{}
+	if err := format.Decode(data, &templateData); err != nil {
+		return fmt.Errorf("%s: %w", sourcePath, err)
+	}
+	recursiveMerge(s.readTemplateData, templateData)
 	return nil
 }
 

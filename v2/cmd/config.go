@@ -337,7 +337,9 @@ func (c *Config) getDefaultTemplateData() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	return data, nil
+	return map[string]interface{}{
+		"chezmoi": data,
+	}, nil
 }
 
 func (c *Config) getPersistentState(options *bolt.Options) (chezmoi.PersistentState, error) {
@@ -365,15 +367,16 @@ func (c *Config) getPersistentStateFile() string {
 }
 
 func (c *Config) getSourceState() (*chezmoi.SourceState, error) {
-	templateData, err := c.getTemplateData()
+	defaultTemplateData, err := c.getDefaultTemplateData()
 	if err != nil {
 		return nil, err
 	}
 
 	s := chezmoi.NewSourceState(
+		chezmoi.WithPreTemplateData(defaultTemplateData),
+		chezmoi.WithPostTemplateData(c.Data),
 		chezmoi.WithSourcePath(c.SourceDir),
 		chezmoi.WithSystem(c.system),
-		chezmoi.WithTemplateData(templateData),
 		chezmoi.WithTemplateFuncs(c.templateFuncs),
 		chezmoi.WithTemplateOptions(c.Template.Options),
 	)
@@ -439,20 +442,6 @@ func (c *Config) getTargetNames(s *chezmoi.SourceState, args []string, options g
 		}
 	}
 	return targetNames[:n], nil
-}
-
-func (c *Config) getTemplateData() (map[string]interface{}, error) {
-	defaultData, err := c.getDefaultTemplateData()
-	if err != nil {
-		return nil, err
-	}
-	data := map[string]interface{}{
-		"chezmoi": defaultData,
-	}
-	for key, value := range c.Data {
-		data[key] = value
-	}
-	return data, nil
 }
 
 func (c *Config) init(rootCmd *cobra.Command) error {

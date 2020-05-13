@@ -43,6 +43,7 @@ const (
 const (
 	chezmoiPrefix = ".chezmoi"
 
+	dataName         = chezmoiPrefix + "data"
 	ignoreName       = chezmoiPrefix + "ignore"
 	removeName       = chezmoiPrefix + "remove"
 	templatesDirName = chezmoiPrefix + "templates"

@@ -18,9 +18,9 @@ func init() {
 }
 
 func (c *Config) runDataCmd(cmd *cobra.Command, args []string) error {
-	templateData, err := c.getTemplateData()
+	s, err := c.getSourceState()
 	if err != nil {
 		return err
 	}
-	return c.marshal(templateData)
+	return c.marshal(s.TemplateData())
 }
