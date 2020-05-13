@@ -10,7 +10,6 @@ var dataCmd = &cobra.Command{
 	Short:   "Print the template data",
 	Long:    mustGetLongHelp("data"),
 	Example: getExample("data"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runDataCmd,
 }
 
@@ -19,8 +18,6 @@ func init() {
 }
 
 func (c *Config) runDataCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	templateData, err := c.getTemplateData()
 	if err != nil {
 		return err

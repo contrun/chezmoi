@@ -20,6 +20,9 @@ var docsCmd = &cobra.Command{
 	Long:    mustGetLongHelp("docs"),
 	Example: getExample("docs"),
 	RunE:    config.runDocsCmd,
+	Annotations: map[string]string{
+		doesNotRequireValidConfig: "true",
+	},
 }
 
 func init() {

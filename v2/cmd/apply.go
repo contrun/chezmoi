@@ -9,8 +9,10 @@ var applyCmd = &cobra.Command{
 	Short:   "Update the destination directory to match the target state",
 	Long:    mustGetLongHelp("apply"),
 	Example: getExample("apply"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runApplyCmd,
+	Annotations: map[string]string{
+		modifiesDestinationDirectory: "true",
+	},
 }
 
 func init() {

@@ -11,10 +11,9 @@ import (
 )
 
 var passCmd = &cobra.Command{
-	Use:     "pass [args...]",
-	Short:   "Execute the pass CLI",
-	PreRunE: config.ensureNoError,
-	RunE:    config.runSecretPassCmd,
+	Use:   "pass [args...]",
+	Short: "Execute the pass CLI",
+	RunE:  config.runSecretPassCmd,
 }
 
 type passCmdConfig struct {

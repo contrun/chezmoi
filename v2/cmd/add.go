@@ -11,9 +11,10 @@ var addCmd = &cobra.Command{
 	Short:   "Add an existing file, directory, or symlink to the source state",
 	Long:    mustGetLongHelp("add"),
 	Example: getExample("add"),
-	PreRunE: config.ensureNoError,
-	// RunE:     config.runAddCmd,
-	// PostRunE: config.autoCommitAndAutoPush,
+	// RunE:     config.runAddCmd, // FIXME
+	Annotations: map[string]string{
+		modifiesSourceDirectory: "true",
+	},
 }
 
 type addCmdConfig struct{}

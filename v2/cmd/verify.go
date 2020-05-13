@@ -14,7 +14,6 @@ var verifyCmd = &cobra.Command{
 	Short:   "Exit with success if the destination state matches the target state, fail otherwise",
 	Long:    mustGetLongHelp("verify"),
 	Example: getExample("verify"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runVerifyCmd,
 }
 
@@ -25,8 +24,6 @@ func init() {
 }
 
 func (c *Config) runVerifyCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	canarySystem := chezmoi.NewCanarySystem(chezmoi.NewNullSystem())
 	if err := c.applyArgs(canarySystem, "", args); err != nil {
 		return err

@@ -20,7 +20,6 @@ var archiveCmd = &cobra.Command{
 	Short:   "Generate a tar archive of the target state",
 	Long:    mustGetLongHelp("archive"),
 	Example: getExample("archive"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runArchiveCmd,
 }
 
@@ -29,8 +28,6 @@ func init() {
 }
 
 func (c *Config) runArchiveCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	sb := &strings.Builder{}
 	tarSystem := chezmoi.NewTARSystem(sb, tarHeaderTemplate())
 	if err := c.applyArgs(tarSystem, "", args); err != nil {

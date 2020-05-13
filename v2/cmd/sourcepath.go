@@ -12,7 +12,6 @@ var sourcePathCmd = &cobra.Command{
 	Short:   "Print the path of a target in the source state",
 	Long:    mustGetLongHelp("source-path"),
 	Example: getExample("source-path"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runSourcePathCmd,
 }
 
@@ -23,8 +22,6 @@ func init() {
 }
 
 func (c *Config) runSourcePathCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	if len(args) == 0 {
 		return c.writeOutputString(c.SourceDir + eolStr)
 	}

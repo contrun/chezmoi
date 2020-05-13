@@ -17,7 +17,6 @@ var managedCmd = &cobra.Command{
 	Short:   "List the managed entries in the destination directory",
 	Long:    mustGetLongHelp("managed"),
 	Example: getExample("managed"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runManagedCmd,
 }
 
@@ -33,8 +32,6 @@ func init() {
 }
 
 func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	var (
 		includeAbsent   = false
 		includeDirs     = false

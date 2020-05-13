@@ -18,10 +18,9 @@ import (
 )
 
 var keepassxcCmd = &cobra.Command{
-	Use:     "keepassxc [args...]",
-	Short:   "Execute the Keepassxc CLI (keepassxc-cli)",
-	PreRunE: config.ensureNoError,
-	RunE:    config.runKeepassxcCmd,
+	Use:   "keepassxc [args...]",
+	Short: "Execute the Keepassxc CLI (keepassxc-cli)",
+	RunE:  config.runKeepassxcCmd,
 }
 
 type keepassxcCmdConfig struct {

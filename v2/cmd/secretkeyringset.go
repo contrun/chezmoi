@@ -10,11 +10,10 @@ import (
 )
 
 var keyringSetCmd = &cobra.Command{
-	Use:     "set",
-	Args:    cobra.NoArgs,
-	Short:   "Set a password in keyring",
-	PreRunE: config.ensureNoError,
-	RunE:    config.runKeyringSetCmd,
+	Use:   "set",
+	Args:  cobra.NoArgs,
+	Short: "Set a password in keyring",
+	RunE:  config.runKeyringSetCmd,
 }
 
 func init() {

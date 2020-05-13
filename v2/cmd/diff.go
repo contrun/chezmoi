@@ -19,7 +19,6 @@ var diffCmd = &cobra.Command{
 	Short:   "Print the diff between the target state and the destination state",
 	Long:    mustGetLongHelp("diff"),
 	Example: getExample("diff"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runDiffCmd,
 }
 
@@ -33,8 +32,6 @@ func init() {
 }
 
 func (c *Config) runDiffCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	sb := &strings.Builder{}
 	unifiedEncoder := diff.NewUnifiedEncoder(sb, diff.DefaultContextLines)
 	if c.colored {

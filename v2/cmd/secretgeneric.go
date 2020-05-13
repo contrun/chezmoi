@@ -14,10 +14,9 @@ import (
 )
 
 var genericSecretCmd = &cobra.Command{
-	Use:     "generic [args...]",
-	Short:   "Execute a generic secret command",
-	PreRunE: config.ensureNoError,
-	RunE:    config.runGenericSecretCmd,
+	Use:   "generic [args...]",
+	Short: "Execute a generic secret command",
+	RunE:  config.runGenericSecretCmd,
 }
 
 type genericSecretCmdConfig struct {

@@ -11,7 +11,6 @@ var dumpCmd = &cobra.Command{
 	Short:   "Generate a dump of the target state",
 	Long:    mustGetLongHelp("dump"),
 	Example: getExample("dump"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runDumpCmd,
 }
 
@@ -21,8 +20,6 @@ func init() {
 }
 
 func (c *Config) runDumpCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	dataSystem := chezmoi.NewDataSystem()
 	if err := c.applyArgs(dataSystem, "", args); err != nil {
 		return err

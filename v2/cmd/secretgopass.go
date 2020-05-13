@@ -11,10 +11,9 @@ import (
 )
 
 var gopassCmd = &cobra.Command{
-	Use:     "gopass [args...]",
-	Short:   "Execute the gopass CLI",
-	PreRunE: config.ensureNoError,
-	RunE:    config.runSecretGopassCmd,
+	Use:   "gopass [args...]",
+	Short: "Execute the gopass CLI",
+	RunE:  config.runSecretGopassCmd,
 }
 
 type gopassCmdConfig struct {

@@ -9,9 +9,10 @@ var editCmd = &cobra.Command{
 	Short:   "Edit the source state of a target",
 	Long:    mustGetLongHelp("edit"),
 	Example: getExample("edit"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runEditCmd,
-	// PostRunE: config.autoCommitAndAutoPush,
+	Annotations: map[string]string{
+		modifiesSourceDirectory: "true",
+	},
 }
 
 type editCmdConfig struct {

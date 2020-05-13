@@ -15,6 +15,9 @@ var purgeCmd = &cobra.Command{
 	Long:    mustGetLongHelp("purge"),
 	Example: getExample("purge"),
 	RunE:    config.runPurgeCmd,
+	Annotations: map[string]string{
+		modifiesSourceDirectory: "true",
+	},
 }
 
 func init() {

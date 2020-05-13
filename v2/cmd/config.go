@@ -235,14 +235,6 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	return nil
 }
 
-// ensureNoError ensures that no error was encountered when loading c.
-func (c *Config) ensureNoError(cmd *cobra.Command, args []string) error {
-	if c.err != nil {
-		return errors.New("config contains errors, aborting")
-	}
-	return nil
-}
-
 func (c *Config) ensureSourceDirectory() error {
 	info, err := c.fs.Stat(c.SourceDir)
 	switch {
@@ -504,6 +496,12 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 }
 
 func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error {
+	if !getBoolAnnotation(cmd, doesNotRequireValidConfig) {
+		if c.err != nil {
+			return errors.New("config contains errors, aborting")
+		}
+	}
+
 	if colored, err := strconv.ParseBool(c.Color); err == nil {
 		c.colored = colored
 	} else {
@@ -521,7 +519,7 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 				c.colored = false
 			}
 		default:
-			return fmt.Errorf("invalid --color value: %s", c.Color)
+			return fmt.Errorf("%s: invalid color value", c.Color)
 		}
 	}
 
@@ -537,6 +535,11 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 		return initErr
 	}
 	c.system = chezmoi.NewRealSystem(c.fs, persistentState)
+	if !getBoolAnnotation(cmd, modifiesConfigFile) &&
+		!getBoolAnnotation(cmd, modifiesDestinationDirectory) &&
+		!getBoolAnnotation(cmd, modifiesSourceDirectory) {
+		c.system = chezmoi.NewReadOnlySystem(c.system)
+	}
 	if c.dryRun {
 		c.system = chezmoi.NewDryRunSystem(c.system)
 	}
@@ -578,10 +581,6 @@ func (c *Config) prompt(s, choices string) (byte, error) {
 			return line[0], nil
 		}
 	}
-}
-
-func (c *Config) readOnly() {
-	c.system = chezmoi.NewReadOnlySystem(c.system)
 }
 
 //nolint:unparam

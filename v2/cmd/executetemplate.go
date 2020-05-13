@@ -13,7 +13,6 @@ var executeTemplateCmd = &cobra.Command{
 	Short:   "Execute the given template(s)",
 	Long:    mustGetLongHelp("execute-template"),
 	Example: getExample("execute-template"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runExecuteTemplateCmd,
 }
 
@@ -31,8 +30,6 @@ func init() {
 }
 
 func (c *Config) runExecuteTemplateCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	if c.executeTemplate.init {
 		c.templateFuncs["promptString"] = func(prompt string) string {
 			if value, ok := c.executeTemplate.promptString[prompt]; ok {

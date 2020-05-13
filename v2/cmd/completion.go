@@ -15,6 +15,9 @@ var completionCmd = &cobra.Command{
 	Example:   getExample("completion"),
 	ValidArgs: []string{"bash", "fish", "zsh"},
 	RunE:      config.runCompletion,
+	Annotations: map[string]string{
+		doesNotRequireValidConfig: "true",
+	},
 }
 
 func init() {

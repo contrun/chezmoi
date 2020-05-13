@@ -3,10 +3,18 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/spf13/cobra"
+)
+
+const (
+	doesNotRequireValidConfig    = "chezmoi_annotation_does_not_require_valid_config"
+	modifiesConfigFile           = "chezmoi_annotation_modifies_config_file"
+	modifiesDestinationDirectory = "chezmoi_annotation_modifies_destination_directory"
+	modifiesSourceDirectory      = "chezmoi_annotation_modifies_source_directory"
 )
 
 var config = mustNewConfig()
@@ -79,6 +87,18 @@ func getAsset(name string) ([]byte, error) {
 		return nil, fmt.Errorf("%s: not found", name)
 	}
 	return asset, nil
+}
+
+func getBoolAnnotation(cmd *cobra.Command, key string) bool {
+	value, ok := cmd.Annotations[key]
+	if !ok {
+		return false
+	}
+	boolValue, err := strconv.ParseBool(value)
+	if err != nil {
+		panic(err)
+	}
+	return boolValue
 }
 
 func getExample(command string) string {

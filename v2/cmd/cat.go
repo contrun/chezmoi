@@ -15,7 +15,6 @@ var catCmd = &cobra.Command{
 	Short:   "Print the target contents of a file or symlink",
 	Long:    mustGetLongHelp("cat"),
 	Example: getExample("cat"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runCatCmd,
 }
 
@@ -26,8 +25,6 @@ func init() {
 }
 
 func (c *Config) runCatCmd(cmd *cobra.Command, args []string) error {
-	c.readOnly()
-
 	s, err := c.getSourceState()
 	if err != nil {
 		return err

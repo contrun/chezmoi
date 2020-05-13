@@ -15,9 +15,10 @@ var removeCmd = &cobra.Command{
 	Short:   "Remove a target from the source state and the destination directory",
 	Long:    mustGetLongHelp("remove"),
 	Example: getExample("remove"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runRemoveCmd,
-	// PostRunE: config.autoCommitAndAutoPush,
+	Annotations: map[string]string{
+		modifiesDestinationDirectory: "true",
+	},
 }
 
 func init() {

@@ -17,6 +17,9 @@ var editConfigCmd = &cobra.Command{
 	Long:    mustGetLongHelp("edit-config"),
 	Example: getExample("edit-config"),
 	RunE:    config.runEditConfigCmd,
+	Annotations: map[string]string{
+		modifiesConfigFile: "true",
+	},
 }
 
 func init() {

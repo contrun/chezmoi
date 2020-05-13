@@ -11,8 +11,11 @@ var cdCmd = &cobra.Command{
 	Short:   "Launch a shell in the source directory",
 	Long:    mustGetLongHelp("cd"),
 	Example: getExample("cd"),
-	PreRunE: config.ensureNoError,
 	RunE:    config.runCDCmd,
+	Annotations: map[string]string{
+		doesNotRequireValidConfig: "true",
+		modifiesSourceDirectory:   "true",
+	},
 }
 
 type cdCmdConfig struct {
