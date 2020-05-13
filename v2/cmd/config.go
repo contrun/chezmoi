@@ -533,7 +533,7 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 	}
 
 	if c.colored {
-		if err := enableVirtualTerminalProcessingOnWindows(c.Stdout); err != nil {
+		if err := enableVirtualTerminalProcessing(c.Stdout); err != nil {
 			return err
 		}
 	}

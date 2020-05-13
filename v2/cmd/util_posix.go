@@ -9,8 +9,8 @@ import (
 
 const eolStr = "\n"
 
-// enableVirtualTerminalProcessingOnWindows does nothing on POSIX systems.
-func enableVirtualTerminalProcessingOnWindows(w io.Writer) error {
+// enableVirtualTerminalProcessing does nothing.
+func enableVirtualTerminalProcessing(w io.Writer) error {
 	return nil
 }
 

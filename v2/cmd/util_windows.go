@@ -11,10 +11,9 @@ import (
 
 const eolStr = "\r\n"
 
-// enableVirtualTerminalProcessingOnWindows enables virtual terminal processing
-// on Windows. See
+// enableVirtualTerminalProcessing enables virtual terminal processing. See
 // https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences.
-func enableVirtualTerminalProcessingOnWindows(w io.Writer) error {
+func enableVirtualTerminalProcessing(w io.Writer) error {
 	f, ok := w.(*os.File)
 	if !ok {
 		return nil
