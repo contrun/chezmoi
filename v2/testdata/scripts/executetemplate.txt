@@ -27,7 +27,7 @@ chezmoi execute-template '{{ .global.last }}'
 stdout chezmoi.toml
 
 -- home/user/.config/chezmoi/chezmoi.toml --
-[global]
+[data.global]
   last = "chezmoi.toml"
 -- home/user/.local/share/chezmoi/.chezmoidata.json --
 {

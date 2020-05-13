@@ -373,10 +373,9 @@ func (c *Config) getSourceState() (*chezmoi.SourceState, error) {
 	}
 
 	s := chezmoi.NewSourceState(
-		chezmoi.WithPreTemplateData(defaultTemplateData),
-		chezmoi.WithPostTemplateData(c.Data),
 		chezmoi.WithSourcePath(c.SourceDir),
 		chezmoi.WithSystem(c.system),
+		chezmoi.WithTemplateData(defaultTemplateData),
 		chezmoi.WithTemplateFuncs(c.templateFuncs),
 		chezmoi.WithTemplateOptions(c.Template.Options),
 	)
@@ -384,6 +383,8 @@ func (c *Config) getSourceState() (*chezmoi.SourceState, error) {
 	if err := s.Read(); err != nil {
 		return nil, err
 	}
+
+	s.MergeTemplateData(c.Data)
 
 	return s, nil
 }
