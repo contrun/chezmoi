@@ -156,8 +156,8 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 	return nil
 }
 
-// AllEntries returns s's source state entries.
-func (s *SourceState) AllEntries() map[string]SourceStateEntry {
+// Entries returns s's source state entries.
+func (s *SourceState) Entries() map[string]SourceStateEntry {
 	return s.entries
 }
 

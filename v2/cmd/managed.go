@@ -61,7 +61,7 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	entries := s.AllEntries()
+	entries := s.Entries()
 	targetNames := make([]string, 0, len(entries))
 	for targetName, sourceStateEntry := range entries {
 		targetStateEntry, err := sourceStateEntry.TargetStateEntry()
