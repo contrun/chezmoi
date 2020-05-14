@@ -18,7 +18,7 @@ import (
 
 // A SourceState is a source state.
 type SourceState struct {
-	Entries         map[string]SourceStateEntry
+	entries         map[string]SourceStateEntry
 	system          System
 	sourcePath      string
 	umask           os.FileMode
@@ -87,7 +87,7 @@ func WithUmask(umask os.FileMode) SourceStateOption {
 // NewSourceState creates a new source state with the given options.
 func NewSourceState(options ...SourceStateOption) *SourceState {
 	s := &SourceState{
-		Entries:         make(map[string]SourceStateEntry),
+		entries:         make(map[string]SourceStateEntry),
 		umask:           DefaultUmask,
 		encryptionTool:  &nullEncryptionTool{},
 		ignore:          NewPatternSet(),
@@ -123,7 +123,7 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 	if err != nil {
 		return err
 	}
-	targetStateEntry, err := s.Entries[targetName].TargetStateEntry()
+	targetStateEntry, err := s.entries[targetName].TargetStateEntry()
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 			}
 			sort.Strings(baseNames)
 			for _, baseName := range baseNames {
-				if _, ok := s.Entries[path.Join(targetName, baseName)]; !ok {
+				if _, ok := s.entries[path.Join(targetName, baseName)]; !ok {
 					if err := system.RemoveAll(path.Join(targetPath, baseName)); err != nil {
 						return err
 					}
@@ -158,13 +158,13 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 
 // AllEntries returns s's source state entries.
 func (s *SourceState) AllEntries() map[string]SourceStateEntry {
-	return s.Entries
+	return s.entries
 }
 
 // TargetNames returns all of s's target names in alphabetical order.
 func (s *SourceState) TargetNames() []string {
-	targetNames := make([]string, 0, len(s.Entries))
-	for targetName := range s.Entries {
+	targetNames := make([]string, 0, len(s.entries))
+	for targetName := range s.entries {
 		targetNames = append(targetNames, targetName)
 	}
 	sort.Strings(targetNames)
@@ -173,14 +173,14 @@ func (s *SourceState) TargetNames() []string {
 
 // Entry returns the source state entry for targetName.
 func (s *SourceState) Entry(targetName string) (SourceStateEntry, bool) {
-	sourceStateEntry, ok := s.Entries[targetName]
+	sourceStateEntry, ok := s.entries[targetName]
 	return sourceStateEntry, ok
 }
 
 // Evaluate evaluates every target state entry in s.
 func (s *SourceState) Evaluate() error {
 	for _, targetName := range s.sortedTargetNames() {
-		sourceStateEntry := s.Entries[targetName]
+		sourceStateEntry := s.entries[targetName]
 		if err := sourceStateEntry.Evaluate(); err != nil {
 			return err
 		}
@@ -222,7 +222,7 @@ func (s *SourceState) MergeTemplateData(templateData map[string]interface{}) {
 // MustEntry returns the source state entry associated with targetName, and
 // panics if it does not exist.
 func (s *SourceState) MustEntry(targetName string) SourceStateEntry {
-	sourceStateEntry, ok := s.Entries[targetName]
+	sourceStateEntry, ok := s.entries[targetName]
 	if !ok {
 		panic(fmt.Sprintf("%s: no source state entry", targetName))
 	}
@@ -330,7 +330,7 @@ func (s *SourceState) Read() error {
 
 	// Populate s.Entries with the unique source entry for each target.
 	for targetName, sourceEntries := range allSourceStateEntries {
-		s.Entries[targetName] = sourceEntries[0]
+		s.entries[targetName] = sourceEntries[0]
 	}
 
 	return nil
@@ -596,8 +596,8 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileA
 
 // sortedTargetNames returns all of s's target names in order.
 func (s *SourceState) sortedTargetNames() []string {
-	targetNames := make([]string, 0, len(s.Entries))
-	for targetName := range s.Entries {
+	targetNames := make([]string, 0, len(s.entries))
+	for targetName := range s.entries {
 		targetNames = append(targetNames, targetName)
 	}
 	sort.Strings(targetNames)
