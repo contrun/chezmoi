@@ -193,9 +193,6 @@ func mustNewConfig(options ...configOption) *Config {
 }
 
 func (c *Config) addTemplateFunc(key string, value interface{}) {
-	if c.templateFuncs == nil {
-		c.templateFuncs = make(template.FuncMap)
-	}
 	if _, ok := c.templateFuncs[key]; ok {
 		panic(fmt.Sprintf("Config.addTemplateFunc: %s already defined", key))
 	}

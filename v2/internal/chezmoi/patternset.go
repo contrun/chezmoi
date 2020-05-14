@@ -28,7 +28,7 @@ func NewPatternSet(options ...PatternSetOption) *PatternSet {
 // Add adds a pattern to ps.
 func (ps *PatternSet) Add(pattern string, include bool) error {
 	if _, err := doublestar.Match(pattern, ""); err != nil {
-		return nil
+		return err
 	}
 	if include {
 		ps.includes.Add(pattern)

@@ -17,12 +17,6 @@ func (s StringSet) Add(elements ...string) {
 	}
 }
 
-// Contains returns true if element is in s.
-func (s StringSet) Contains(element string) bool {
-	_, ok := s[element]
-	return ok
-}
-
 // Elements returns all the elements of s.
 func (s StringSet) Elements() []string {
 	elements := make([]string, 0, len(s))

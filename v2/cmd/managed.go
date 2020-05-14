@@ -55,7 +55,7 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 		case "symlinks", "s":
 			includeSymlinks = true
 		default:
-			return fmt.Errorf("unrecognized include: %q", what)
+			return fmt.Errorf("%s: unrecognized include", what)
 		}
 	}
 

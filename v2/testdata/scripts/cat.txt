@@ -13,6 +13,10 @@ stdout 'not a file or symlink'
 ! chezmoi cat ${/}etc${/}passwd
 stdout 'not in destination directory'
 
+cd $HOME
+chezmoi cat .gitconfig
+cmp stdout $WORK/golden/.gitconfig
+
 -- golden/.gitconfig --
 [user]
   email = user@home.org

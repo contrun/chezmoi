@@ -13,6 +13,16 @@ import (
 	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
 )
 
+func TestAddTemplateFuncPanic(t *testing.T) {
+	c := newTestConfig(t, nil)
+	assert.NotPanics(t, func() {
+		c.addTemplateFunc("func", nil)
+	})
+	assert.Panics(t, func() {
+		c.addTemplateFunc("func", nil)
+	})
+}
+
 func TestUpperSnakeCaseToCamelCase(t *testing.T) {
 	for s, want := range map[string]string{
 		"BUG_REPORT_URL":   "bugReportURL",
