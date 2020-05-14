@@ -1,22 +1,55 @@
 chezmoi managed
 cmpenv stdout golden/managed
 
+chezmoi --include=all managed 
+cmpenv stdout golden/managed-all
+
+chezmoi --include=absent managed 
+cmpenv stdout golden/managed-absent
+
 chezmoi --include=dirs managed 
 cmpenv stdout golden/managed-dirs
 
 chezmoi --include=files managed 
 cmpenv stdout golden/managed-files
 
+chezmoi --include=scripts managed 
+cmpenv stdout golden/managed-scripts
+
+chezmoi --include=symlinks managed 
+cmpenv stdout golden/managed-symlinks
+
 -- golden/managed --
 $HOME${/}.bashrc
 $HOME${/}.ssh
 $HOME${/}.ssh/config
+$HOME${/}.symlink
+-- golden/managed-all --
+$HOME${/}.absent
+$HOME${/}.bashrc
+$HOME${/}.ssh
+$HOME${/}.ssh/config
+$HOME${/}.symlink
+$HOME${/}script
+-- golden/managed-absent --
+$HOME${/}.absent
 -- golden/managed-dirs --
 $HOME${/}.ssh
 -- golden/managed-files --
 $HOME${/}.bashrc
 $HOME${/}.ssh/config
+-- golden/managed-scripts --
+$HOME${/}script
+-- golden/managed-symlinks --
+$HOME${/}.symlink
+-- home/user/.local/share/chezmoi/dot_absent --
 -- home/user/.local/share/chezmoi/dot_bashrc --
 # contents of .bashrc
 -- home/user/.local/share/chezmoi/dot_ssh/config --
 # contents of .ssh/config
+-- home/user/.local/share/chezmoi/run_script --
+#!/bin/sh
+
+echo script
+-- home/user/.local/share/chezmoi/symlink_dot_symlink --
+symlink-linkname

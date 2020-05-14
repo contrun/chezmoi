@@ -33,6 +33,7 @@ func init() {
 
 func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 	var (
+		includeAll      = false
 		includeAbsent   = false
 		includeDirs     = false
 		includeFiles    = false
@@ -41,6 +42,8 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 	)
 	for _, what := range c.managed.include {
 		switch what {
+		case "all":
+			includeAll = true
 		case "absent", "a":
 			includeAbsent = true
 		case "dirs", "d":
@@ -68,26 +71,28 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		switch targetStateEntry.(type) {
-		case *chezmoi.TargetStateAbsent:
-			if !includeAbsent {
-				continue
-			}
-		case *chezmoi.TargetStateDir:
-			if !includeDirs {
-				continue
-			}
-		case *chezmoi.TargetStateFile:
-			if !includeFiles {
-				continue
-			}
-		case *chezmoi.TargetStateScript:
-			if !includeScripts {
-				continue
-			}
-		case *chezmoi.TargetStateSymlink:
-			if !includeSymlinks {
-				continue
+		if !includeAll {
+			switch targetStateEntry.(type) {
+			case *chezmoi.TargetStateAbsent:
+				if !includeAbsent {
+					continue
+				}
+			case *chezmoi.TargetStateDir:
+				if !includeDirs {
+					continue
+				}
+			case *chezmoi.TargetStateFile:
+				if !includeFiles {
+					continue
+				}
+			case *chezmoi.TargetStateScript:
+				if !includeScripts {
+					continue
+				}
+			case *chezmoi.TargetStateSymlink:
+				if !includeSymlinks {
+					continue
+				}
 			}
 		}
 		targetNames = append(targetNames, targetName)
