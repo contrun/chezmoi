@@ -64,7 +64,9 @@ func (c *Config) lastpassOutput(args ...string) ([]byte, error) {
 
 func (c *Config) lastpassRawFunc(id string) []map[string]interface{} {
 	c.Lastpass.versionCheckOnce.Do(func() {
-		panicOnError(c.lastpassVersionCheck())
+		if err := c.lastpassVersionCheck(); err != nil {
+			panic(err)
+		}
 	})
 	if data, ok := lastPassCache[id]; ok {
 		return data
