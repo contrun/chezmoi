@@ -677,31 +677,31 @@ func TestSourceStateRemove(t *testing.T) {
 }
 
 func withEntries(sourceEntries map[string]SourceStateEntry) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.Entries = sourceEntries
+	return func(s *SourceState) {
+		s.Entries = sourceEntries
 	}
 }
 
 func withIgnore(ignore *PatternSet) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.ignore = ignore
+	return func(s *SourceState) {
+		s.ignore = ignore
 	}
 }
 
 func withMinVersion(minVersion *semver.Version) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.minVersion = minVersion
+	return func(s *SourceState) {
+		s.minVersion = minVersion
 	}
 }
 
 func withRemove(remove *PatternSet) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.remove = remove
+	return func(s *SourceState) {
+		s.remove = remove
 	}
 }
 
 func withTemplates(templates map[string]*template.Template) SourceStateOption {
-	return func(ss *SourceState) {
-		ss.templates = templates
+	return func(s *SourceState) {
+		s.templates = templates
 	}
 }
