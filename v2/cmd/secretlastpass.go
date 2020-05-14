@@ -72,7 +72,9 @@ func (c *Config) lastpassRawFunc(id string) []map[string]interface{} {
 		return data
 	}
 	output, err := c.lastpassOutput("show", "--json", id)
-	panicOnError(err)
+	if err != nil {
+		panic(err)
+	}
 	var data []map[string]interface{}
 	if err := json.Unmarshal(output, &data); err != nil {
 		panic(fmt.Errorf("lastpass: parse error: %w\n%q", err, output))

@@ -742,12 +742,6 @@ func isWellKnownAbbreviation(word string) bool {
 	return ok
 }
 
-func panicOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func serializationFormatNamesStr() string {
 	names := make([]string, 0, len(chezmoi.Formats))
 	for name := range chezmoi.Formats {

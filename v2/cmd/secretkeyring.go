@@ -30,12 +30,17 @@ func init() {
 	secretCmd.AddCommand(keyringCmd)
 
 	persistentFlags := keyringCmd.PersistentFlags()
+	persistentFlags.StringVar(&config.Keyring.service, "service", config.Keyring.service, "service")
+	persistentFlags.StringVar(&config.Keyring.user, "user", config.Keyring.user, "user")
 
-	persistentFlags.StringVar(&config.Keyring.service, "service", "", "service")
-	panicOnError(keyringCmd.MarkPersistentFlagRequired("service"))
-
-	persistentFlags.StringVar(&config.Keyring.user, "user", "", "user")
-	panicOnError(keyringCmd.MarkPersistentFlagRequired("user"))
+	for _, name := range []string{
+		"user",
+		"service",
+	} {
+		if err := keyringCmd.MarkPersistentFlagRequired(name); err != nil {
+			panic(err)
+		}
+	}
 
 	config.addTemplateFunc("keyring", config.keyringFunc)
 }
