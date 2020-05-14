@@ -414,14 +414,14 @@ func (c *Config) getTargetNames(s *chezmoi.SourceState, args []string, options g
 			return nil, err
 		}
 		if options.mustBeInSourceState {
-			if _, ok := s.Entries[targetName]; !ok {
+			if _, ok := s.Entry(targetName); !ok {
 				return nil, fmt.Errorf("%s: not in source state", arg)
 			}
 		}
 		targetNames = append(targetNames, targetName)
 		if options.recursive {
 			targetNamePrefix := targetName + chezmoi.PathSeparatorStr
-			for targetName := range s.Entries {
+			for _, targetName := range s.TargetNames() {
 				if strings.HasPrefix(targetName, targetNamePrefix) {
 					targetNames = append(targetNames, targetName)
 				}

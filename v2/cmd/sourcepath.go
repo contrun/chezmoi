@@ -41,7 +41,7 @@ func (c *Config) runSourcePathCmd(cmd *cobra.Command, args []string) error {
 
 	sb := &strings.Builder{}
 	for _, targetName := range targetNames {
-		sb.WriteString(filepath.FromSlash(s.Entries[targetName].Path()) + eolStr)
+		sb.WriteString(filepath.FromSlash(s.MustEntry(targetName).Path()) + eolStr)
 	}
 	return c.writeOutputString(sb.String())
 }

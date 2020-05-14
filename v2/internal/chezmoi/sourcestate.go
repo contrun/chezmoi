@@ -156,6 +156,21 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 	return nil
 }
 
+// AllEntries returns s's source state entries.
+func (s *SourceState) AllEntries() map[string]SourceStateEntry {
+	return s.Entries
+}
+
+// TargetNames returns all of s's target names in alphabetical order.
+func (s *SourceState) TargetNames() []string {
+	targetNames := make([]string, 0, len(s.Entries))
+	for targetName := range s.Entries {
+		targetNames = append(targetNames, targetName)
+	}
+	sort.Strings(targetNames)
+	return targetNames
+}
+
 // Entry returns the source state entry for targetName.
 func (s *SourceState) Entry(targetName string) (SourceStateEntry, bool) {
 	sourceStateEntry, ok := s.Entries[targetName]

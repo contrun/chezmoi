@@ -39,7 +39,7 @@ func (c *Config) runCatCmd(cmd *cobra.Command, args []string) error {
 
 	sb := &strings.Builder{}
 	for _, targetName := range targetNames {
-		targetStateEntry, err := s.Entries[targetName].TargetStateEntry()
+		targetStateEntry, err := s.MustEntry(targetName).TargetStateEntry()
 		if err != nil {
 			return fmt.Errorf("%s: %w", targetName, err)
 		}
