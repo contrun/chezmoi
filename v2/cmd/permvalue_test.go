@@ -4,17 +4,59 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPermValue(t *testing.T) {
-	for s, expected := range map[string]string{
-		"0":   "000",
-		"644": "644",
-		"755": "755",
+	for _, tc := range []struct {
+		s              string
+		expectedErr    bool
+		expected       permValue
+		expectedString string
+	}{
+		{
+			s:              "0",
+			expected:       0,
+			expectedString: "000",
+		},
+		{
+			s:              "644",
+			expected:       0o644,
+			expectedString: "644",
+		},
+		{
+			s:              "755",
+			expected:       0o755,
+			expectedString: "755",
+		},
+		{
+			s:              "0",
+			expected:       0,
+			expectedString: "000",
+		},
+		{
+			s:           "-0",
+			expectedErr: true,
+		},
+		{
+			s:           "s",
+			expectedErr: true,
+		},
+		{
+			s:           "008",
+			expectedErr: true,
+		},
 	} {
-		var p permValue
-		assert.NoError(t, p.Set(s))
-		assert.Equal(t, expected, p.String())
-		assert.Equal(t, "int", p.Type())
+		t.Run(tc.s, func(t *testing.T) {
+			var p permValue
+			err := p.Set(tc.s)
+			if tc.expectedErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expectedString, p.String())
+				assert.Equal(t, "uint", p.Type())
+			}
+		})
 	}
 }

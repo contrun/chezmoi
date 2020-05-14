@@ -5,12 +5,12 @@ import (
 	"strconv"
 )
 
-// An permValue is an int that is scanned and printed in octal. It implements
+// An permValue is an uint that is scanned and printed in octal. It implements
 // the pflag.Value interface for use as a command line flag.
-type permValue int
+type permValue uint
 
 func (p *permValue) Set(s string) error {
-	v, err := strconv.ParseInt(s, 8, 64)
+	v, err := strconv.ParseUint(s, 8, 64)
 	*p = permValue(v)
 	return err
 }
@@ -20,5 +20,5 @@ func (p *permValue) String() string {
 }
 
 func (p *permValue) Type() string {
-	return "int"
+	return "uint"
 }
