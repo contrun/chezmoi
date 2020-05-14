@@ -264,7 +264,7 @@ func (c *Config) autoPush(status *git.Status) error {
 	if status.Empty() {
 		return nil
 	}
-	return c.run(c.SourceDir, c.Git.Command, append([]string{"push"}))
+	return c.run(c.SourceDir, c.Git.Command, []string{"push"})
 }
 
 func (c *Config) cmdOutput(dir, name string, args []string) ([]byte, error) {
