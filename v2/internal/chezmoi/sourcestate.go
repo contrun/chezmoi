@@ -276,21 +276,21 @@ func (s *SourceState) Read() error {
 			}
 			return nil
 		case info.IsDir():
-			dirAttributes := ParseDirAttributes(sourceName)
-			targetName := path.Join(targetDirName, dirAttributes.Name)
+			da := parseDirAttributes(sourceName)
+			targetName := path.Join(targetDirName, da.Name)
 			if s.ignore.Match(targetName) {
 				return nil
 			}
-			sourceStateEntry := s.newSourceStateDir(sourcePath, dirAttributes)
+			sourceStateEntry := s.newSourceStateDir(sourcePath, da)
 			allSourceStateEntries[targetName] = append(allSourceStateEntries[targetName], sourceStateEntry)
 			return nil
 		case info.Mode().IsRegular():
-			fileAttributes := ParseFileAttributes(sourceName)
-			targetName := path.Join(targetDirName, fileAttributes.Name)
+			fa := parseFileAttributes(sourceName)
+			targetName := path.Join(targetDirName, fa.Name)
 			if s.ignore.Match(targetName) {
 				return nil
 			}
-			sourceStateEntry := s.newSourceStateFile(sourcePath, fileAttributes)
+			sourceStateEntry := s.newSourceStateFile(sourcePath, fa)
 			allSourceStateEntries[targetName] = append(allSourceStateEntries[targetName], sourceStateEntry)
 			return nil
 		default:
@@ -340,7 +340,7 @@ func (s *SourceState) Read() error {
 func (s *SourceState) Remove(system System, targetDir string) error {
 	// Build a set of targets to remove.
 	targetDirPrefix := targetDir + PathSeparatorStr
-	targetPathsToRemove := NewStringSet()
+	targetPathsToRemove := newStringSet()
 	for include := range s.remove.includes {
 		matches, err := system.Glob(path.Join(targetDir, include))
 		if err != nil {
@@ -484,33 +484,33 @@ func (s *SourceState) executeTemplate(path string) ([]byte, error) {
 	return s.ExecuteTemplateData(path, data)
 }
 
-func (s *SourceState) newSourceStateDir(sourcePath string, dirAttributes DirAttributes) *SourceStateDir {
+func (s *SourceState) newSourceStateDir(sourcePath string, da dirAttributes) *SourceStateDir {
 	perm := os.FileMode(0o777)
-	if dirAttributes.Private {
+	if da.Private {
 		perm &^= 0o77
 	}
 	perm &^= s.umask
 
 	targetStateDir := &TargetStateDir{
 		perm:  perm,
-		exact: dirAttributes.Exact,
+		exact: da.Exact,
 	}
 
 	return &SourceStateDir{
 		path:             sourcePath,
-		attributes:       dirAttributes,
+		attributes:       da,
 		targetStateEntry: targetStateDir,
 	}
 }
 
-func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileAttributes) *SourceStateFile {
+func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *SourceStateFile {
 	lazyContents := &lazyContents{
 		contentsFunc: func() ([]byte, error) {
 			contents, err := s.system.ReadFile(sourcePath)
 			if err != nil {
 				return nil, err
 			}
-			if !fileAttributes.Encrypted {
+			if !fa.Encrypted {
 				return contents, nil
 			}
 			// FIXME pass targetName as filenameHint
@@ -519,27 +519,27 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileA
 	}
 
 	var targetStateEntryFunc func() (TargetStateEntry, error)
-	switch fileAttributes.Type {
-	case SourceFileTypeFile:
+	switch fa.Type {
+	case sourceFileTypeFile:
 		targetStateEntryFunc = func() (TargetStateEntry, error) {
 			contents, err := lazyContents.Contents()
 			if err != nil {
 				return nil, err
 			}
-			if fileAttributes.Template {
+			if fa.Template {
 				contents, err = s.ExecuteTemplateData(sourcePath, contents)
 				if err != nil {
 					return nil, err
 				}
 			}
-			if !fileAttributes.Empty && isEmpty(contents) {
+			if !fa.Empty && isEmpty(contents) {
 				return &TargetStateAbsent{}, nil
 			}
 			perm := os.FileMode(0o666)
-			if fileAttributes.Executable {
+			if fa.Executable {
 				perm |= 0o111
 			}
-			if fileAttributes.Private {
+			if fa.Private {
 				perm &^= 0o77
 			}
 			perm &^= s.umask
@@ -548,13 +548,13 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileA
 				perm:         perm,
 			}, nil
 		}
-	case SourceFileTypeScript:
+	case sourceFileTypeScript:
 		targetStateEntryFunc = func() (TargetStateEntry, error) {
 			contents, err := lazyContents.Contents()
 			if err != nil {
 				return nil, err
 			}
-			if fileAttributes.Template {
+			if fa.Template {
 				contents, err = s.ExecuteTemplateData(sourcePath, contents)
 				if err != nil {
 					return nil, err
@@ -562,17 +562,17 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileA
 			}
 			return &TargetStateScript{
 				lazyContents: newLazyContents(contents),
-				name:         fileAttributes.Name,
-				once:         fileAttributes.Once,
+				name:         fa.Name,
+				once:         fa.Once,
 			}, nil
 		}
-	case SourceFileTypeSymlink:
+	case sourceFileTypeSymlink:
 		targetStateEntryFunc = func() (TargetStateEntry, error) {
 			linknameBytes, err := lazyContents.Contents()
 			if err != nil {
 				return nil, err
 			}
-			if fileAttributes.Template {
+			if fa.Template {
 				linknameBytes, err = s.ExecuteTemplateData(sourcePath, linknameBytes)
 				if err != nil {
 					return nil, err
@@ -583,13 +583,13 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fileAttributes FileA
 			}, nil
 		}
 	default:
-		panic(fmt.Sprintf("unsupported type: %s", string(fileAttributes.Type)))
+		panic(fmt.Sprintf("unsupported type: %s", string(fa.Type)))
 	}
 
 	return &SourceStateFile{
 		lazyContents:         lazyContents,
 		path:                 sourcePath,
-		attributes:           fileAttributes,
+		attributes:           fa,
 		targetStateEntryFunc: targetStateEntryFunc,
 	}
 }
@@ -609,8 +609,8 @@ func getTargetDirName(sourceDirName string) string {
 	sourceNames := strings.Split(sourceDirName, PathSeparatorStr)
 	targetNames := make([]string, 0, len(sourceNames))
 	for _, sourceName := range sourceNames {
-		dirAttributes := ParseDirAttributes(sourceName)
-		targetNames = append(targetNames, dirAttributes.Name)
+		da := parseDirAttributes(sourceName)
+		targetNames = append(targetNames, da.Name)
 	}
 	return strings.Join(targetNames, PathSeparatorStr)
 }

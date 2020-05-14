@@ -21,7 +21,7 @@ func TestMaybeShellQuote(t *testing.T) {
 		`--arg`:       `--arg`,
 		`--arg=value`: `--arg=value`,
 	} {
-		assert.Equal(t, expected, MaybeShellQuote(s), "quoting %q", s)
+		assert.Equal(t, expected, maybeShellQuote(s), "quoting %q", s)
 	}
 }
 

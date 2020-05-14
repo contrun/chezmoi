@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestDirAttributes tests DirAttributes by round-tripping between directory
-// names and DirAttributes.
+// TestDirAttributes tests dirAttributes by round-tripping between directory
+// names and dirAttributes.
 func TestDirAttributes(t *testing.T) {
 	testData := struct {
 		Name    []string
@@ -31,22 +31,22 @@ func TestDirAttributes(t *testing.T) {
 		Exact:   []bool{false, true},
 		Private: []bool{false, true},
 	}
-	var dirAttributes []DirAttributes
-	require.NoError(t, combinator.Generate(&dirAttributes, testData))
-	for _, da := range dirAttributes {
+	var das []dirAttributes
+	require.NoError(t, combinator.Generate(&das, testData))
+	for _, da := range das {
 		actualSourceName := da.SourceName()
-		actualDA := ParseDirAttributes(actualSourceName)
+		actualDA := parseDirAttributes(actualSourceName)
 		assert.Equal(t, da, actualDA)
 		assert.Equal(t, actualSourceName, actualDA.SourceName())
 	}
 }
 
-// TestFileAttributes tests FileAttributes by round-tripping between file names
-// and FileAttributes.
+// TestFileAttributes tests fileAttributes by round-tripping between file names
+// and fileAttributes.
 func TestFileAttributes(t *testing.T) {
-	var fileAttributes []FileAttributes
-	require.NoError(t, combinator.Generate(&fileAttributes, struct {
-		Type       SourceFileTargetType
+	var fas []fileAttributes
+	require.NoError(t, combinator.Generate(&fas, struct {
+		Type       sourceFileTargetType
 		Name       []string
 		Empty      []bool
 		Encrypted  []bool
@@ -54,7 +54,7 @@ func TestFileAttributes(t *testing.T) {
 		Private    []bool
 		Template   []bool
 	}{
-		Type: SourceFileTypeFile,
+		Type: sourceFileTypeFile,
 		Name: []string{
 			".name",
 			"exact_name",
@@ -66,32 +66,32 @@ func TestFileAttributes(t *testing.T) {
 		Private:    []bool{false, true},
 		Template:   []bool{false, true},
 	}))
-	require.NoError(t, combinator.Generate(&fileAttributes, struct {
-		Type SourceFileTargetType
+	require.NoError(t, combinator.Generate(&fas, struct {
+		Type sourceFileTargetType
 		Name []string
 		Once []bool
 	}{
-		Type: SourceFileTypeScript,
+		Type: sourceFileTypeScript,
 		Name: []string{
 			"exact_name",
 			"name",
 		},
 		Once: []bool{false, true},
 	}))
-	require.NoError(t, combinator.Generate(&fileAttributes, struct {
-		Type SourceFileTargetType
+	require.NoError(t, combinator.Generate(&fas, struct {
+		Type sourceFileTargetType
 		Name []string
 		Once []bool
 	}{
-		Type: SourceFileTypeSymlink,
+		Type: sourceFileTypeSymlink,
 		Name: []string{
 			"exact_name",
 			"name",
 		},
 	}))
-	for _, fa := range fileAttributes {
+	for _, fa := range fas {
 		actualSourceName := fa.SourceName()
-		actualFA := ParseFileAttributes(actualSourceName)
+		actualFA := parseFileAttributes(actualSourceName)
 		assert.Equal(t, fa, actualFA)
 		assert.Equal(t, actualSourceName, actualFA.SourceName())
 	}

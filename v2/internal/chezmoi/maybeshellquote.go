@@ -12,8 +12,8 @@ const (
 	singleQuote = '\''
 )
 
-// MaybeShellQuote returns s quoted as a shell argument, if necessary.
-func MaybeShellQuote(s string) string {
+// maybeShellQuote returns s quoted as a shell argument, if necessary.
+func maybeShellQuote(s string) string {
 	switch {
 	case s == "":
 		return "''"
@@ -55,7 +55,7 @@ func MaybeShellQuote(s string) string {
 func ShellQuoteArgs(args []string) string {
 	shellQuotedArgs := make([]string, 0, len(args))
 	for _, arg := range args {
-		shellQuotedArgs = append(shellQuotedArgs, MaybeShellQuote(arg))
+		shellQuotedArgs = append(shellQuotedArgs, maybeShellQuote(arg))
 	}
 	return strings.Join(shellQuotedArgs, " ")
 }

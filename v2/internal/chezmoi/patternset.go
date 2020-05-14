@@ -6,8 +6,8 @@ import (
 
 // An PatternSet is a set of patterns.
 type PatternSet struct {
-	includes StringSet
-	excludes StringSet
+	includes stringSet
+	excludes stringSet
 }
 
 // A PatternSetOption sets an option on a pattern set.
@@ -16,8 +16,8 @@ type PatternSetOption func(*PatternSet)
 // NewPatternSet returns a new PatternSet.
 func NewPatternSet(options ...PatternSetOption) *PatternSet {
 	ps := &PatternSet{
-		includes: NewStringSet(),
-		excludes: NewStringSet(),
+		includes: newStringSet(),
+		excludes: newStringSet(),
 	}
 	for _, option := range options {
 		option(ps)
