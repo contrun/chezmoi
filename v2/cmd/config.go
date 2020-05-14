@@ -672,7 +672,7 @@ func (c *Config) runEditor(args []string) error {
 func (c *Config) marshal(data interface{}) error {
 	format, ok := chezmoi.Formats[strings.ToLower(c.Format)]
 	if !ok {
-		return fmt.Errorf("unknown format: %s", c.Format)
+		return fmt.Errorf("%s: unknown format", c.Format)
 	}
 	marshaledData, err := format.Marshal(data)
 	if err != nil {

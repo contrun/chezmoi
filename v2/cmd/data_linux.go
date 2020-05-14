@@ -91,7 +91,7 @@ func parseOSRelease(r io.Reader) (map[string]string, error) {
 		}
 		fields := strings.SplitN(token, "=", 2)
 		if len(fields) != 2 {
-			return nil, fmt.Errorf("cannot parse %q", token)
+			return nil, fmt.Errorf("%s: cannot parse", token)
 		}
 		key := fields[0]
 		value := maybeUnquote(fields[1])

@@ -100,7 +100,7 @@ func (c *Config) lastpassVersionCheck() error {
 	}
 	m := lastpassVersionRegexp.FindSubmatch(output)
 	if m == nil {
-		return fmt.Errorf("lastpass: could not extract version from %q", output)
+		return fmt.Errorf("lastpass: %s: could not extract version", output)
 	}
 	version, err := semver.NewVersion(string(m[1]))
 	if err != nil {

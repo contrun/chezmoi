@@ -38,7 +38,7 @@ func TestChezmoi(t *testing.T) {
 			case "v2":
 				return true, nil
 			default:
-				return false, fmt.Errorf("unknown condition: %s", cond)
+				return false, fmt.Errorf("%s: unknown condition", cond)
 			}
 		},
 		Setup:         setup,

@@ -117,7 +117,7 @@ func validateKeys(data interface{}, re *regexp.Regexp) error {
 	case map[string]interface{}:
 		for key, value := range data {
 			if !re.MatchString(key) {
-				return fmt.Errorf("invalid key: %q", key)
+				return fmt.Errorf("%s: invalid key", key)
 			}
 			if err := validateKeys(value, re); err != nil {
 				return err
