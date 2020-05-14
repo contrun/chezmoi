@@ -8,6 +8,6 @@ import (
 
 func TestMustGetLongHelpPanics(t *testing.T) {
 	assert.Panics(t, func() {
-		mustGetLongHelp("non-existant-command")
+		mustGetLongHelp("non-existent-command")
 	})
 }
