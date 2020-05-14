@@ -106,14 +106,17 @@ func getExample(command string) string {
 	return helps[command].example
 }
 
-func markRemainingZshCompPositionalArgumentsAsFiles(cmd *cobra.Command, from int) {
+func markRemainingZshCompPositionalArgumentsAsFiles(cmd *cobra.Command, from int) error {
 	// As far as I can tell, there is no way to mark all remaining positional
 	// arguments as files. Marking the first eight positional arguments as files
 	// should be enough for everybody.
 	// FIXME mark all remaining positional arguments as files
 	for i := 0; i < 8; i++ {
-		panicOnError(cmd.MarkZshCompPositionalArgumentFile(from + i))
+		if err := cmd.MarkZshCompPositionalArgumentFile(from + i); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func mustGetLongHelp(command string) string {
