@@ -127,14 +127,14 @@ func TestSourceStateApplyAll(t *testing.T) {
 			},
 			sourceStateOptions: []SourceStateOption{
 				WithTemplateData(map[string]interface{}{
-					"email": "john.smith@company.com",
+					"email": "user@company.com",
 				}),
 			},
 			tests: []interface{}{
 				vfst.TestPath("/home/user/foo",
 					vfst.TestModeIsRegular,
 					vfst.TestModePerm(0o644),
-					vfst.TestContentsString("email = john.smith@company.com"),
+					vfst.TestContentsString("email = user@company.com"),
 				),
 			},
 		},
