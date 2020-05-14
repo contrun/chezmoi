@@ -156,6 +156,12 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 	return nil
 }
 
+// Entry returns the source state entry for targetName.
+func (s *SourceState) Entry(targetName string) (SourceStateEntry, bool) {
+	sourceStateEntry, ok := s.Entries[targetName]
+	return sourceStateEntry, ok
+}
+
 // Evaluate evaluates every target state entry in s.
 func (s *SourceState) Evaluate() error {
 	for _, targetName := range s.sortedTargetNames() {
@@ -196,6 +202,16 @@ func (s *SourceState) ExecuteTemplateData(name string, data []byte) ([]byte, err
 // MergeTemplateData merges templateData into s's template data.
 func (s *SourceState) MergeTemplateData(templateData map[string]interface{}) {
 	recursiveMerge(s.templateData, templateData)
+}
+
+// MustEntry returns the source state entry associated with targetName, and
+// panics if it does not exist.
+func (s *SourceState) MustEntry(targetName string) SourceStateEntry {
+	sourceStateEntry, ok := s.Entries[targetName]
+	if !ok {
+		panic(fmt.Sprintf("%s: no source state entry", targetName))
+	}
+	return sourceStateEntry
 }
 
 // Read reads a source state from sourcePath.
