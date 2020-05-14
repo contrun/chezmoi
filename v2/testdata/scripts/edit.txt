@@ -1,4 +1,4 @@
-[v2] stop # FIXME
+stop # FIXME
 
 chezmoi edit $HOME/.bashrc
 grep -count=1 '# edited' $CHEZMOISOURCEDIR/dot_bashrc

@@ -7,10 +7,10 @@ chezmoi source-path $HOME${/}.bashrc
 cmpenv stdout golden/source-path-bashrc
 
 ! chezmoi source-path $HOME${/}.inputrc
-stdout 'file does not exist|not in source state'
+stdout 'not in source state'
 
 ! chezmoi source-path $WORK${/}etc${/}passwd
-stdout 'outside target directory|not in destination directory'
+stdout 'not in destination directory'
 
 -- golden/source-path --
 $HOME${/}.local${/}share${/}chezmoi

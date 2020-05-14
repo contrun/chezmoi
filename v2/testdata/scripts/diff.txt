@@ -1,5 +1,7 @@
 [!v2] stop 'diff format changed in v2'
 
+# FIXME add chezmoi diff --color test (requires care with line endings)
+
 chmod 700 $HOME${/}.ssh
 
 # test that chezmoi diff generates no output when the source and destination states are equal

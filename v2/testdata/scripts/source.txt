@@ -1,8 +1,0 @@
-[v2] stop 'no source command in v2'
-
-[!exec:git] stop
-
-chezmoi init
-
-chezmoi source -- --version
-stdout 'git version'
