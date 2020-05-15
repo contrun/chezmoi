@@ -8,9 +8,9 @@ import (
 	"github.com/twpayne/go-vfs/vfst"
 )
 
-var _ System = &DataSystem{}
+var _ System = &DumpSystem{}
 
-func TestDataSystem(t *testing.T) {
+func TestDumpSystem(t *testing.T) {
 	fs, cleanup, err := vfst.NewTestFS(map[string]interface{}{
 		"/home/user/.local/share/chezmoi": map[string]interface{}{
 			".chezmoiignore":  "README.md\n",
@@ -37,8 +37,8 @@ func TestDataSystem(t *testing.T) {
 	require.NoError(t, s.Read())
 	require.NoError(t, s.Evaluate())
 
-	dataSystem := NewDataSystem()
-	require.NoError(t, s.ApplyAll(dataSystem, vfst.DefaultUmask, "", NewIncludeBits(IncludeAll)))
+	dumpSystem := NewDumpSystem()
+	require.NoError(t, s.ApplyAll(dumpSystem, vfst.DefaultUmask, "", NewIncludeBits(IncludeAll)))
 	expectedData := map[string]interface{}{
 		"dir": &dirData{
 			Type: dataTypeDir,
@@ -62,6 +62,6 @@ func TestDataSystem(t *testing.T) {
 			Linkname: "bar",
 		},
 	}
-	actualData := dataSystem.Data()
+	actualData := dumpSystem.Data()
 	assert.Equal(t, expectedData, actualData)
 }

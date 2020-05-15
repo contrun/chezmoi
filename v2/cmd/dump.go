@@ -28,9 +28,9 @@ func init() {
 }
 
 func (c *Config) runDumpCmd(cmd *cobra.Command, args []string) error {
-	dataSystem := chezmoi.NewDataSystem()
-	if err := c.applyArgs(dataSystem, "", args, c.dump.include); err != nil {
+	dumpSystem := chezmoi.NewDumpSystem()
+	if err := c.applyArgs(dumpSystem, "", args, c.dump.include); err != nil {
 		return err
 	}
-	return c.marshal(dataSystem.Data())
+	return c.marshal(dumpSystem.Data())
 }

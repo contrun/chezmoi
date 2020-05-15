@@ -13,8 +13,8 @@ const (
 	dataTypeSymlink dataType = "symlink"
 )
 
-// A DataSystem is a System that writes to a data file.
-type DataSystem struct {
+// A DumpSystem is a System that writes to a data file.
+type DumpSystem struct {
 	nullSystem
 	data map[string]interface{}
 }
@@ -44,25 +44,25 @@ type symlinkData struct {
 	Linkname string   `json:"linkname" toml:"linkname" yaml:"linkname"`
 }
 
-// NewDataSystem returns a new DataSystem that accumulates data.
-func NewDataSystem() *DataSystem {
-	return &DataSystem{
+// NewDumpSystem returns a new DumpSystem that accumulates data.
+func NewDumpSystem() *DumpSystem {
+	return &DumpSystem{
 		data: make(map[string]interface{}),
 	}
 }
 
 // Chmod implements System.Chmod.
-func (s *DataSystem) Chmod(name string, mode os.FileMode) error {
+func (s *DumpSystem) Chmod(name string, mode os.FileMode) error {
 	return os.ErrPermission
 }
 
 // Data returns s's data.
-func (s *DataSystem) Data() interface{} {
+func (s *DumpSystem) Data() interface{} {
 	return s.data
 }
 
 // Mkdir implements System.Mkdir.
-func (s *DataSystem) Mkdir(dirname string, perm os.FileMode) error {
+func (s *DumpSystem) Mkdir(dirname string, perm os.FileMode) error {
 	if _, exists := s.data[dirname]; exists {
 		return os.ErrExist
 	}
@@ -75,12 +75,12 @@ func (s *DataSystem) Mkdir(dirname string, perm os.FileMode) error {
 }
 
 // RemoveAll implements System.RemoveAll.
-func (s *DataSystem) RemoveAll(name string) error {
+func (s *DumpSystem) RemoveAll(name string) error {
 	return os.ErrPermission
 }
 
 // RunScript implements System.RunScript.
-func (s *DataSystem) RunScript(scriptname string, data []byte) error {
+func (s *DumpSystem) RunScript(scriptname string, data []byte) error {
 	if _, exists := s.data[scriptname]; exists {
 		return os.ErrExist
 	}
@@ -93,7 +93,7 @@ func (s *DataSystem) RunScript(scriptname string, data []byte) error {
 }
 
 // WriteFile implements System.WriteFile.
-func (s *DataSystem) WriteFile(filename string, data []byte, perm os.FileMode) error {
+func (s *DumpSystem) WriteFile(filename string, data []byte, perm os.FileMode) error {
 	if _, exists := s.data[filename]; exists {
 		return os.ErrExist
 	}
@@ -107,7 +107,7 @@ func (s *DataSystem) WriteFile(filename string, data []byte, perm os.FileMode) e
 }
 
 // WriteSymlink implements System.WriteSymlink.
-func (s *DataSystem) WriteSymlink(oldname, newname string) error {
+func (s *DumpSystem) WriteSymlink(oldname, newname string) error {
 	if _, exists := s.data[newname]; exists {
 		return os.ErrExist
 	}
