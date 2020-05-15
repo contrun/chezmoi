@@ -1,5 +1,3 @@
-[!v2] stop 'diff format changed in v2'
-
 mkhomedir golden
 mkhomedir
 mksourcedir
