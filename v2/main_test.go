@@ -76,10 +76,16 @@ func cmdChHome(ts *testscript.TestScript, neg bool, args []string) {
 	if len(args) != 1 {
 		ts.Fatalf("usage: chhome dir")
 	}
-	homeDir := ts.MkAbs(args[0])
+	var (
+		homeDir          = ts.MkAbs(args[0])
+		chezmoiConfigDir = filepath.Join(homeDir, ".config", "chezmoi")
+		chezmoiSourceDir = filepath.Join(homeDir, ".local", "share", "chezmoi")
+	)
 	ts.Check(os.MkdirAll(homeDir, 0o777))
 	ts.Setenv("HOME", homeDir)
 	ts.Setenv("HOMESLASH", filepath.ToSlash(homeDir))
+	ts.Setenv("CHEZMOICONFIGDIR", chezmoiConfigDir)
+	ts.Setenv("CHEZMOISOURCEDIR", chezmoiSourceDir)
 	if runtime.GOOS == "windows" {
 		ts.Setenv("USERPROFILE", homeDir)
 	}

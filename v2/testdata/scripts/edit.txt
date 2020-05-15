@@ -1,7 +1,9 @@
 stop # FIXME
 
-chezmoi edit $HOME/.bashrc
+mksourcedir
+
+chezmoi edit $HOME${/}.bashrc
 grep -count=1 '# edited' $CHEZMOISOURCEDIR/dot_bashrc
 
--- home/user/.local/share/chezmoi/dot_bashrc --
-# contents of .bashrc
+chezmoi edit $HOME${/}.symlink
+grep -count=1 '# edited' $CHEZMOISOURCEDIR/dot_symlink
