@@ -9,11 +9,6 @@ import (
 	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
 )
 
-type diffCmdConfig struct {
-	NoPager bool
-	Pager   string
-}
-
 var diffCmd = &cobra.Command{
 	Use:     "diff [targets...]",
 	Short:   "Print the diff between the target state and the destination state",
@@ -22,10 +17,17 @@ var diffCmd = &cobra.Command{
 	RunE:    config.runDiffCmd,
 }
 
+type diffCmdConfig struct {
+	include *chezmoi.IncludeBits
+	NoPager bool
+	Pager   string
+}
+
 func init() {
 	rootCmd.AddCommand(diffCmd)
 
 	persistentFlags := diffCmd.PersistentFlags()
+	persistentFlags.VarP(config.Diff.include, "include", "i", "include entry types")
 	persistentFlags.BoolVar(&config.Diff.NoPager, "no-pager", config.Diff.NoPager, "disable pager")
 
 	markRemainingZshCompPositionalArgumentsAsFiles(diffCmd, 1)
@@ -38,7 +40,7 @@ func (c *Config) runDiffCmd(cmd *cobra.Command, args []string) error {
 		unifiedEncoder.SetColor(diff.NewColorConfig())
 	}
 	gitDiffSystem := chezmoi.NewGitDiffSystem(unifiedEncoder, c.system, c.DestDir+chezmoi.PathSeparatorStr)
-	if err := c.applyArgs(gitDiffSystem, c.DestDir, args); err != nil {
+	if err := c.applyArgs(gitDiffSystem, c.DestDir, args, c.Diff.include); err != nil {
 		return err
 	}
 	return c.writeOutputString(sb.String())

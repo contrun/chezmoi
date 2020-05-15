@@ -1,11 +1,14 @@
+mkhomedir golden
+mksourcedir
+
 chezmoi cat $HOME${/}.bashrc
-cmp stdout ${CHEZMOISOURCEDIR}/dot_bashrc
+cmp stdout golden/.bashrc
 
 chezmoi cat $HOME${/}.gitconfig
 cmp stdout golden/.gitconfig
 
 chezmoi cat $HOME${/}.symlink
-stdout 'target'
+stdout '\.bashrc'
 
 ! chezmoi cat $HOME${/}.ssh
 stdout 'not a file or symlink'
@@ -16,21 +19,3 @@ stdout 'not in destination directory'
 cd $HOME
 chezmoi cat .gitconfig
 cmp stdout $WORK/golden/.gitconfig
-
--- golden/.gitconfig --
-[user]
-  email = user@home.org
--- home/user/.bashrc --
-# contents of .bashrc
--- home/user/.config/chezmoi/chezmoi.toml --
-[data]
-  email = "user@home.org"
--- home/user/.local/share/chezmoi/dot_bashrc --
-# contents of .bashrc
--- home/user/.local/share/chezmoi/dot_gitconfig.tmpl --
-[user]
-  email = {{ .email }}
--- home/user/.local/share/chezmoi/private_dot_ssh/config --
-# contents of .ssh/config
--- home/user/.local/share/chezmoi/symlink_dot_symlink --
-target

@@ -83,9 +83,13 @@ type Config struct {
 
 	// Command configurations, not settable in the config file.
 	add             addCmdConfig
+	apply           applyCmdConfig
+	archive         archiveCmdConfig
+	dump            dumpCmdConfig
 	edit            editCmdConfig
 	executeTemplate executeTemplateCmdConfig
 	managed         managedCmdConfig
+	verify          verifyCmdConfig
 
 	scriptStateBucket []byte
 	Stdin             io.Reader
@@ -142,6 +146,9 @@ func newConfig(options ...configOption) (*Config, error) {
 		Color:      "auto",
 		Format:     "json",
 		recursive:  true,
+		Diff: diffCmdConfig{
+			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll &^ chezmoi.IncludeScripts),
+		},
 		Git: gitCmdConfig{
 			Command: "git",
 		},
@@ -170,8 +177,20 @@ func newConfig(options ...configOption) (*Config, error) {
 		Vault: vaultCmdConfig{
 			Command: "vault",
 		},
+		apply: applyCmdConfig{
+			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+		},
+		archive: archiveCmdConfig{
+			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+		},
+		dump: dumpCmdConfig{
+			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+		},
 		managed: managedCmdConfig{
-			include: []string{"dirs", "files", "symlinks"},
+			include: chezmoi.NewIncludeBits(chezmoi.IncludeDirs | chezmoi.IncludeFiles | chezmoi.IncludeSymlinks),
+		},
+		verify: verifyCmdConfig{
+			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
 		},
 		scriptStateBucket: []byte("script"),
 		Stdin:             os.Stdin,
@@ -199,14 +218,14 @@ func (c *Config) addTemplateFunc(key string, value interface{}) {
 	c.templateFuncs[key] = value
 }
 
-func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args []string) error {
+func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args []string, include *chezmoi.IncludeBits) error {
 	s, err := c.getSourceState()
 	if err != nil {
 		return err
 	}
 
 	if len(args) == 0 {
-		return s.ApplyAll(targetSystem, os.FileMode(c.Umask), targetDir)
+		return s.ApplyAll(targetSystem, os.FileMode(c.Umask), targetDir, include)
 	}
 
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
@@ -218,7 +237,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	for _, targetName := range targetNames {
-		if err := s.ApplyOne(targetSystem, os.FileMode(c.Umask), targetDir, targetName); err != nil {
+		if err := s.ApplyOne(targetSystem, os.FileMode(c.Umask), targetDir, targetName, include); err != nil {
 			return err
 		}
 	}

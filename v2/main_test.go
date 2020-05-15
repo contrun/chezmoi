@@ -9,16 +9,32 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/rogpeppe/go-internal/testscript"
 	"github.com/twpayne/go-vfs"
 	"github.com/twpayne/go-vfs/vfst"
+
+	"github.com/twpayne/chezmoi/v2/cmd"
 )
 
 //nolint:interfacer
 func TestMain(m *testing.M) {
 	os.Exit(testscript.RunMain(m, map[string]func() int{
-		"chezmoi": testRun,
+		"chezmoi": func() int {
+			if err := cmd.Execute(cmd.VersionInfo{
+				Version: "v2.0.0",
+				Commit:  "HEAD",
+				Date:    time.Now().Format(time.RFC3339),
+				BuiltBy: "testscript",
+			}); err != nil {
+				if s := err.Error(); s != "" {
+					fmt.Printf("chezmoi: %s\n", s)
+				}
+				return 1
+			}
+			return 0
+		},
 	}))
 }
 
@@ -29,9 +45,11 @@ func TestChezmoi(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir: filepath.Join("testdata", "scripts"),
 		Cmds: map[string]func(*testscript.TestScript, bool, []string){
-			"chhome": cmdChhome,
-			"edit":   cmdEdit,
-			"mkfile": cmdMkFile,
+			"chhome":      cmdChHome,
+			"edit":        cmdEdit,
+			"mkfile":      cmdMkFile,
+			"mkhomedir":   cmdMkHomeDir,
+			"mksourcedir": cmdMkSourceDir,
 		},
 		Condition: func(cond string) (bool, error) {
 			switch cond {
@@ -48,30 +66,17 @@ func TestChezmoi(t *testing.T) {
 	})
 }
 
-func testRun() int {
-	if err := run(); err != nil {
-		if s := err.Error(); s != "" {
-			fmt.Printf("chezmoi: %s\n", s)
-		}
-		return 1
-	}
-	return 0
-}
-
-// cmdChhome changes the home directory to its argument, creating the directory
+// cmdChHome changes the home directory to its argument, creating the directory
 // if it does not already exists. It updates the HOME environment variable, and,
 // if running on Windows, USERPROFILE too.
-func cmdChhome(ts *testscript.TestScript, neg bool, args []string) {
+func cmdChHome(ts *testscript.TestScript, neg bool, args []string) {
 	if neg {
 		ts.Fatalf("unsupported: ! chhome")
 	}
 	if len(args) != 1 {
 		ts.Fatalf("usage: chhome dir")
 	}
-	homeDir := args[0]
-	if !filepath.IsAbs(homeDir) {
-		homeDir = filepath.Join(ts.Getenv("WORK"), homeDir)
-	}
+	homeDir := ts.MkAbs(args[0])
 	ts.Check(os.MkdirAll(homeDir, 0o777))
 	ts.Setenv("HOME", homeDir)
 	ts.Setenv("HOMESLASH", filepath.ToSlash(homeDir))
@@ -129,6 +134,68 @@ func cmdMkFile(ts *testscript.TestScript, neg bool, args []string) {
 	}
 }
 
+// cmdMkHomeDir makes and populates a home directory.
+func cmdMkHomeDir(ts *testscript.TestScript, neg bool, args []string) {
+	if neg {
+		ts.Fatalf("unsupported: ! mkhomedir")
+	}
+	if len(args) > 1 {
+		ts.Fatalf(("usage: mkhomedir [path]"))
+	}
+	path := ts.Getenv("HOME")
+	if len(args) > 0 {
+		path = args[0]
+	}
+	if err := vfst.NewBuilder().Build(vfs.HostOSFS, map[string]interface{}{
+		ts.MkAbs(path): map[string]interface{}{
+			".bashrc": "# contents of .bashrc\n",
+			".binary": &vfst.File{
+				Perm:     0o755,
+				Contents: []byte("#/bin/sh\n"),
+			},
+			".gitconfig": "[user]\n  email = user@home.org\n",
+			".hushlogin": "",
+			".ssh": &vfst.Dir{
+				Perm: 0o755,
+				Entries: map[string]interface{}{
+					"config": "# contents of .ssh/config",
+				},
+			},
+			".symlink": &vfst.Symlink{
+				Target: ".bashrc\n",
+			},
+		}}); err != nil {
+		ts.Fatalf("mkhomedir: %v", err)
+	}
+}
+
+// cmdMkSourceDir makes and populates a source directory.
+func cmdMkSourceDir(ts *testscript.TestScript, neg bool, args []string) {
+	if neg {
+		ts.Fatalf("unsupported: ! mksourcedir")
+	}
+	if len(args) != 0 {
+		ts.Fatalf(("usage: mksourcedir"))
+	}
+	err := vfst.NewBuilder().Build(vfs.HostOSFS, map[string]interface{}{
+		ts.MkAbs(ts.Getenv("CHEZMOISOURCEDIR")): map[string]interface{}{
+			".chezmoiremove":        ".absent\n",
+			"empty_dot_hushlogin":   "",
+			"executable_dot_binary": "#/bin/sh\n",
+			"dot_bashrc":            "# contents of .bashrc\n",
+			"dot_gitconfig.tmpl":    "[user]\n  email = {{ \"user@home.org\" }}\n",
+			"private_dot_ssh": map[string]interface{}{
+				"config": "# contents of .ssh/config",
+			},
+			"run_script":          "#/bin/sh\necho script\n",
+			"symlink_dot_symlink": ".bashrc\n",
+		},
+	})
+	if err != nil {
+		ts.Fatalf("mksourcedir: %v", err)
+	}
+}
+
 func setup(env *testscript.Env) error {
 	var (
 		binDir           = filepath.Join(env.WorkDir, "bin")
@@ -168,18 +235,7 @@ func setup(env *testscript.Env) error {
 		}
 	}
 
-	root := map[string]interface{}{
-		"/home/user": map[string]interface{}{
-			// .gitconfig is populated with a user and email to avoid warnings
-			// from git.
-			".gitconfig": strings.Join([]string{
-				`[user]`,
-				`    name = Username`,
-				`    email = user@home.org`,
-			}, "\n"),
-		},
-	}
-
+	root := make(map[string]interface{})
 	switch runtime.GOOS {
 	case "windows":
 		root["/bin"] = map[string]interface{}{

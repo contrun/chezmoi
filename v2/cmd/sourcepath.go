@@ -31,17 +31,14 @@ func (c *Config) runSourcePathCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
-		recursive:           false,
-		mustBeInSourceState: true,
-	})
+	sourcePaths, err := c.getSourcePaths(s, args)
 	if err != nil {
 		return err
 	}
 
 	sb := &strings.Builder{}
-	for _, targetName := range targetNames {
-		sb.WriteString(filepath.FromSlash(s.MustEntry(targetName).Path()) + eolStr)
+	for _, sourcePath := range sourcePaths {
+		sb.WriteString(filepath.FromSlash(sourcePath) + eolStr)
 	}
 	return c.writeOutputString(sb.String())
 }

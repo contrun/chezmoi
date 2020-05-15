@@ -17,15 +17,22 @@ var verifyCmd = &cobra.Command{
 	RunE:    config.runVerifyCmd,
 }
 
+type verifyCmdConfig struct {
+	include *chezmoi.IncludeBits
+}
+
 func init() {
 	rootCmd.AddCommand(verifyCmd)
+
+	persistentFlags := verifyCmd.PersistentFlags()
+	persistentFlags.VarP(config.verify.include, "include", "i", "include entry types")
 
 	markRemainingZshCompPositionalArgumentsAsFiles(verifyCmd, 1)
 }
 
 func (c *Config) runVerifyCmd(cmd *cobra.Command, args []string) error {
 	canarySystem := chezmoi.NewCanarySystem(chezmoi.NewNullSystem())
-	if err := c.applyArgs(canarySystem, "", args); err != nil {
+	if err := c.applyArgs(canarySystem, "", args, c.verify.include); err != nil {
 		return err
 	}
 	if canarySystem.Mutated() {

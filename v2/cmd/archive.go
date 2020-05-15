@@ -23,14 +23,21 @@ var archiveCmd = &cobra.Command{
 	RunE:    config.runArchiveCmd,
 }
 
+type archiveCmdConfig struct {
+	include *chezmoi.IncludeBits
+}
+
 func init() {
 	rootCmd.AddCommand(archiveCmd)
+
+	persistentFlags := archiveCmd.PersistentFlags()
+	persistentFlags.VarP(config.archive.include, "include", "i", "include entry types")
 }
 
 func (c *Config) runArchiveCmd(cmd *cobra.Command, args []string) error {
 	sb := &strings.Builder{}
 	tarSystem := chezmoi.NewTARSystem(sb, tarHeaderTemplate())
-	if err := c.applyArgs(tarSystem, "", args); err != nil {
+	if err := c.applyArgs(tarSystem, "", args, c.archive.include); err != nil {
 		return err
 	}
 	if err := tarSystem.Close(); err != nil {

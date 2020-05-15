@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -21,44 +20,17 @@ var managedCmd = &cobra.Command{
 }
 
 type managedCmdConfig struct {
-	include []string
+	include *chezmoi.IncludeBits
 }
 
 func init() {
 	rootCmd.AddCommand(managedCmd)
 
 	persistentFlags := managedCmd.PersistentFlags()
-	persistentFlags.StringSliceVarP(&config.managed.include, "include", "i", config.managed.include, "include")
+	persistentFlags.VarP(config.dump.include, "include", "i", "include entry types")
 }
 
 func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
-	var (
-		includeAll      = false
-		includeAbsent   = false
-		includeDirs     = false
-		includeFiles    = false
-		includeScripts  = false
-		includeSymlinks = false
-	)
-	for _, what := range c.managed.include {
-		switch what {
-		case "all":
-			includeAll = true
-		case "absent", "a":
-			includeAbsent = true
-		case "dirs", "d":
-			includeDirs = true
-		case "files", "f":
-			includeFiles = true
-		case "scripts":
-			includeScripts = true
-		case "symlinks", "s":
-			includeSymlinks = true
-		default:
-			return fmt.Errorf("%s: unrecognized include", what)
-		}
-	}
-
 	s, err := c.getSourceState()
 	if err != nil {
 		return err
@@ -71,29 +43,8 @@ func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		if !includeAll {
-			switch targetStateEntry.(type) {
-			case *chezmoi.TargetStateAbsent:
-				if !includeAbsent {
-					continue
-				}
-			case *chezmoi.TargetStateDir:
-				if !includeDirs {
-					continue
-				}
-			case *chezmoi.TargetStateFile:
-				if !includeFiles {
-					continue
-				}
-			case *chezmoi.TargetStateScript:
-				if !includeScripts {
-					continue
-				}
-			case *chezmoi.TargetStateSymlink:
-				if !includeSymlinks {
-					continue
-				}
-			}
+		if !c.managed.include.Include(targetStateEntry) {
+			continue
 		}
 		targetNames = append(targetNames, targetName)
 	}

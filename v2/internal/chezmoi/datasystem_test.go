@@ -38,7 +38,7 @@ func TestDataSystem(t *testing.T) {
 	require.NoError(t, s.Evaluate())
 
 	dataSystem := NewDataSystem()
-	require.NoError(t, s.ApplyAll(dataSystem, vfst.DefaultUmask, ""))
+	require.NoError(t, s.ApplyAll(dataSystem, vfst.DefaultUmask, "", NewIncludeBits(IncludeAll)))
 	expectedData := map[string]interface{}{
 		"dir": &dirData{
 			Type: dataTypeDir,

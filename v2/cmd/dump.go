@@ -14,14 +14,22 @@ var dumpCmd = &cobra.Command{
 	RunE:    config.runDumpCmd,
 }
 
+type dumpCmdConfig struct {
+	include *chezmoi.IncludeBits
+}
+
 func init() {
 	rootCmd.AddCommand(dumpCmd)
+
+	persistentFlags := dumpCmd.PersistentFlags()
+	persistentFlags.VarP(config.dump.include, "include", "i", "include entry types")
+
 	markRemainingZshCompPositionalArgumentsAsFiles(dumpCmd, 1)
 }
 
 func (c *Config) runDumpCmd(cmd *cobra.Command, args []string) error {
 	dataSystem := chezmoi.NewDataSystem()
-	if err := c.applyArgs(dataSystem, "", args); err != nil {
+	if err := c.applyArgs(dataSystem, "", args, c.dump.include); err != nil {
 		return err
 	}
 	return c.marshal(dataSystem.Data())

@@ -107,9 +107,9 @@ func (s *SourceState) Add() error {
 }
 
 // ApplyAll updates targetDir in fs to match s.
-func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir string) error {
+func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir string, include *IncludeBits) error {
 	for _, targetName := range s.sortedTargetNames() {
-		if err := s.ApplyOne(system, umask, targetDir, targetName); err != nil {
+		if err := s.ApplyOne(system, umask, targetDir, targetName, include); err != nil {
 			return err
 		}
 	}
@@ -117,19 +117,26 @@ func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir strin
 }
 
 // ApplyOne updates targetName in targetDir on fs to match s using s.
-func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targetName string) error {
+func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targetName string, include *IncludeBits) error {
+	targetStateEntry, err := s.entries[targetName].TargetStateEntry()
+	if err != nil {
+		return err
+	}
+
+	if !include.Include(targetStateEntry) {
+		return nil
+	}
+
 	targetPath := path.Join(targetDir, targetName)
 	destStateEntry, err := NewDestStateEntry(system, targetPath)
 	if err != nil {
 		return err
 	}
-	targetStateEntry, err := s.entries[targetName].TargetStateEntry()
-	if err != nil {
-		return err
-	}
+
 	if err := targetStateEntry.Apply(system, destStateEntry); err != nil {
 		return err
 	}
+
 	if targetStateDir, ok := targetStateEntry.(*TargetStateDir); ok {
 		if targetStateDir.exact {
 			infos, err := system.ReadDir(targetPath)
@@ -152,6 +159,7 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 			}
 		}
 	}
+
 	// FIXME chezmoiremove
 	return nil
 }

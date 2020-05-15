@@ -1,3 +1,5 @@
+stop # FIXME
+
 # test --dry-run
 chezmoi apply --dry-run
 ! exists $HOME/.bashrc

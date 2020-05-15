@@ -18,17 +18,13 @@ var (
 	builtBy = ""
 )
 
-func run() error {
-	return cmd.Execute(cmd.VersionInfo{
+func main() {
+	if err := cmd.Execute(cmd.VersionInfo{
 		Version: version,
 		Commit:  commit,
 		Date:    date,
 		BuiltBy: builtBy,
-	})
-}
-
-func main() {
-	if err := run(); err != nil {
+	}); err != nil {
 		if s := err.Error(); s != "" {
 			fmt.Printf("chezmoi: %s\n", s)
 		}

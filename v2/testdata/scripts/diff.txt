@@ -1,8 +1,10 @@
 [!v2] stop 'diff format changed in v2'
 
-# FIXME add chezmoi diff --color test (requires care with line endings)
+mkhomedir golden
+mkhomedir
+mksourcedir
 
-chmod 700 $HOME${/}.ssh
+# FIXME add chezmoi diff --color test (requires care with line endings)
 
 # test that chezmoi diff generates no output when the source and destination states are equal
 chezmoi diff
@@ -18,19 +20,19 @@ rm ${CHEZMOISOURCEDIR}/dot_inputrc
 edit $HOME/.bashrc
 chezmoi diff
 cmp stdout golden/modify-file-diff
-chezmoi apply
+cp golden/.bashrc $HOME
 
 # test that chezmoi diff generates a diff when a file is removed from the destination directory
 rm $HOME/.bashrc
 chezmoi diff
 cmp stdout golden/remove-file-diff
-chezmoi apply
+cp golden/.bashrc $HOME
 
 # test that chezmoi diff generates a diff when a directory is removed from the destination directory
 rm $HOME/.ssh
 chezmoi diff
 cmp stdout golden/remove-dir-diff
-chezmoi apply
+cp golden/.ssh $HOME
 
 # FIXME remove test
 
@@ -40,14 +42,14 @@ chezmoi apply
 chmod 755 $HOME/.bashrc
 chezmoi diff
 cmp stdout golden/chmod-file-diff
-chezmoi apply
+chmod 644 $HOME/.bashrc
 
 # test that chezmoi diff generates a diff when a dir's permissions are changed
 # FIXME show changes to permissions in diff
 chmod 755 $HOME/.ssh
 chezmoi diff
 cmp stdout golden/chmod-dir-diff
-chezmoi apply
+chmod 700 $HOME/.ssh
 
 -- golden/add-file-diff --
 diff --git a/.inputrc b/.inputrc
@@ -97,11 +99,3 @@ new mode 100644
 diff --git a/.ssh b/.ssh
 -- golden/dot_inputrc --
 # contents of .inputrc
--- home/user/.bashrc --
-# contents of .bashrc
--- home/user/.ssh/config --
-# contents of .ssh/config
--- home/user/.local/share/chezmoi/dot_bashrc --
-# contents of .bashrc
--- home/user/.local/share/chezmoi/private_dot_ssh/config --
-# contents of .ssh/config

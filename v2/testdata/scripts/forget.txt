@@ -1,3 +1,5 @@
+mksourcedir
+
 chezmoi forget --force $HOME${/}.bashrc
 ! exists ${CHEZMOISOURCEDIR}/dot_bashrc
 exists ${CHEZMOISOURCEDIR}/private_dot_ssh
@@ -5,8 +7,3 @@ exists ${CHEZMOISOURCEDIR}/private_dot_ssh/config
 
 chezmoi forget --force ${HOME}${/}.ssh
 ! exists ${CHEZMOISOURCEDIR}/private_dot_ssh
-
--- home/user/.local/share/chezmoi/dot_bashrc --
-# contents of .bashrc
--- home/user/.local/share/chezmoi/private_dot_ssh/config --
-# contents of .ssh/config
