@@ -11,7 +11,7 @@ func TestPermValue(t *testing.T) {
 	for _, tc := range []struct {
 		s              string
 		expectedErr    bool
-		expected       permFlag
+		expected       fileMode
 		expectedString string
 	}{
 		{
@@ -52,7 +52,7 @@ func TestPermValue(t *testing.T) {
 		},
 	} {
 		t.Run(tc.s, func(t *testing.T) {
-			var p permFlag
+			var p fileMode
 			err := p.Set(tc.s)
 			if tc.expectedErr {
 				require.Error(t, err)

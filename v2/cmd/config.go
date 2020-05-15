@@ -48,7 +48,7 @@ type Config struct {
 	// Global configuration, settable in the config file.
 	SourceDir string
 	DestDir   string
-	Umask     permFlag
+	Umask     fileMode
 	Format    string
 	Follow    bool
 	Remove    bool
@@ -142,7 +142,7 @@ func newConfig(options ...configOption) (*Config, error) {
 		configFile: getDefaultConfigFile(bds),
 		DestDir:    filepath.ToSlash(homeDir),
 		SourceDir:  getDefaultSourceDir(bds),
-		Umask:      permFlag(getUmask()),
+		Umask:      fileMode(getUmask()),
 		Color:      "auto",
 		Format:     "json",
 		recursive:  true,
