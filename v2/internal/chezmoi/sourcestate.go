@@ -579,7 +579,7 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *
 				}
 			}
 			return &TargetStateSymlink{
-				lazyLinkname: newLazyLinkname(string(linknameBytes)),
+				lazyLinkname: newLazyLinkname(string(bytes.TrimSpace(linknameBytes))),
 			}, nil
 		}
 	default:

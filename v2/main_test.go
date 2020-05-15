@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -28,8 +29,9 @@ func TestChezmoi(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir: filepath.Join("testdata", "scripts"),
 		Cmds: map[string]func(*testscript.TestScript, bool, []string){
-			"chhome": chHome,
+			"chhome": chhome,
 			"edit":   edit,
+			"mkfile": mkfile,
 		},
 		Condition: func(cond string) (bool, error) {
 			switch cond {
@@ -59,9 +61,9 @@ func testRun() int {
 // chHome changes the home directory to its argument, creating the directory if
 // it does not already exists. It updates the HOME environment variable, and, if
 // running on Windows, USERPROFILE too.
-func chHome(ts *testscript.TestScript, neg bool, args []string) {
+func chhome(ts *testscript.TestScript, neg bool, args []string) {
 	if neg {
-		ts.Fatalf("unsupported ! chhome")
+		ts.Fatalf("unsupported: ! chhome")
 	}
 	if len(args) != 1 {
 		ts.Fatalf("usage: chhome dir")
@@ -81,7 +83,7 @@ func chHome(ts *testscript.TestScript, neg bool, args []string) {
 // edit edits all of its arguments by appending "# edited\n" to them.
 func edit(ts *testscript.TestScript, neg bool, args []string) {
 	if neg {
-		ts.Fatalf("unsupported ! edit")
+		ts.Fatalf("unsupported: ! edit")
 	}
 	for _, arg := range args {
 		filename := ts.MkAbs(arg)
@@ -93,6 +95,36 @@ func edit(ts *testscript.TestScript, neg bool, args []string) {
 		//nolint:gosec
 		if err := ioutil.WriteFile(filename, data, 0o666); err != nil {
 			ts.Fatalf("edit: %v", err)
+		}
+	}
+}
+
+// mkfile creates empty files.
+func mkfile(ts *testscript.TestScript, neg bool, args []string) {
+	if neg {
+		ts.Fatalf("unsupported: ! mkfile")
+	}
+	perm := os.FileMode(0o666)
+	if len(args) >= 1 && strings.HasPrefix(args[0], "-perm=") {
+		permStr := strings.TrimPrefix(args[0], "-perm=")
+		permUint32, err := strconv.ParseUint(permStr, 8, 32)
+		if err != nil {
+			ts.Fatalf("%s: bad permissions", permStr)
+		}
+		perm = os.FileMode(permUint32)
+		args = args[1:]
+	}
+	for _, arg := range args {
+		filename := ts.MkAbs(arg)
+		_, err := os.Lstat(filename)
+		switch {
+		case err == nil:
+			ts.Fatalf("%s: already exists", arg)
+		case !os.IsNotExist(err):
+			ts.Fatalf("%s: %v", arg, err)
+		}
+		if err := ioutil.WriteFile(filename, nil, perm); err != nil {
+			ts.Fatalf("%s: %v", arg, err)
 		}
 	}
 }
