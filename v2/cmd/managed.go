@@ -27,7 +27,7 @@ func init() {
 	rootCmd.AddCommand(managedCmd)
 
 	persistentFlags := managedCmd.PersistentFlags()
-	persistentFlags.VarP(config.dump.include, "include", "i", "include entry types")
+	persistentFlags.VarP(config.managed.include, "include", "i", "include entry types")
 }
 
 func (c *Config) runManagedCmd(cmd *cobra.Command, args []string) error {

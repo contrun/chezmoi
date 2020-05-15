@@ -32,7 +32,9 @@ cp golden/.bashrc $HOME
 rm $HOME/.ssh
 chezmoi diff
 cmp stdout golden/remove-dir-diff
-cp golden/.ssh $HOME
+mkdir $HOME/.ssh
+chmod 700 $HOME/.ssh
+cp golden/.ssh/config $HOME/.ssh/config
 
 # FIXME remove test
 

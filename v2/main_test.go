@@ -156,13 +156,13 @@ func cmdMkHomeDir(ts *testscript.TestScript, neg bool, args []string) {
 			".gitconfig": "[user]\n  email = user@home.org\n",
 			".hushlogin": "",
 			".ssh": &vfst.Dir{
-				Perm: 0o755,
+				Perm: 0o700,
 				Entries: map[string]interface{}{
-					"config": "# contents of .ssh/config",
+					"config": "# contents of .ssh/config\n",
 				},
 			},
 			".symlink": &vfst.Symlink{
-				Target: ".bashrc\n",
+				Target: ".bashrc",
 			},
 		}}); err != nil {
 		ts.Fatalf("mkhomedir: %v", err)
@@ -179,13 +179,13 @@ func cmdMkSourceDir(ts *testscript.TestScript, neg bool, args []string) {
 	}
 	err := vfst.NewBuilder().Build(vfs.HostOSFS, map[string]interface{}{
 		ts.MkAbs(ts.Getenv("CHEZMOISOURCEDIR")): map[string]interface{}{
-			".chezmoiremove":        ".absent\n",
+			"dot_absent":            "",
 			"empty_dot_hushlogin":   "",
 			"executable_dot_binary": "#/bin/sh\n",
 			"dot_bashrc":            "# contents of .bashrc\n",
 			"dot_gitconfig.tmpl":    "[user]\n  email = {{ \"user@home.org\" }}\n",
 			"private_dot_ssh": map[string]interface{}{
-				"config": "# contents of .ssh/config",
+				"config": "# contents of .ssh/config\n",
 			},
 			"run_script":          "#/bin/sh\necho script\n",
 			"symlink_dot_symlink": ".bashrc\n",

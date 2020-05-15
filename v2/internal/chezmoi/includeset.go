@@ -54,7 +54,7 @@ func (m *IncludeBits) Include(e TargetStateEntry) bool {
 	case *TargetStateScript:
 		return *m&IncludeScripts != 0
 	case *TargetStateSymlink:
-		return *m&IncludeScripts != 0
+		return *m&IncludeSymlinks != 0
 	default:
 		panic(fmt.Sprintf("%T: unsupported type", e))
 	}
