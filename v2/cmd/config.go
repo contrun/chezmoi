@@ -225,7 +225,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	if len(args) == 0 {
-		return s.ApplyAll(targetSystem, os.FileMode(c.Umask), targetDir, include)
+		return s.ApplyAll(targetSystem, c.Umask.FileMode(), targetDir, include)
 	}
 
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
@@ -237,7 +237,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	for _, targetName := range targetNames {
-		if err := s.ApplyOne(targetSystem, os.FileMode(c.Umask), targetDir, targetName, include); err != nil {
+		if err := s.ApplyOne(targetSystem, c.Umask.FileMode(), targetDir, targetName, include); err != nil {
 			return err
 		}
 	}
@@ -548,7 +548,7 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 	}
 
 	if getBoolAnnotation(cmd, requiresConfigDirectory) {
-		if err := vfs.MkdirAll(c.fs, filepath.Dir(c.configFile), 0o777&^os.FileMode(c.Umask)); err != nil {
+		if err := vfs.MkdirAll(c.fs, filepath.Dir(c.configFile), 0o777&^c.Umask.FileMode()); err != nil {
 			return err
 		}
 	}
@@ -558,15 +558,15 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 		switch {
 		case err == nil && info.IsDir():
 			if chezmoi.POSIXFileModes && info.Mode()&os.ModePerm&0o77 != 0 {
-				if err := c.fs.Chmod(c.SourceDir, 0o700&^os.FileMode(c.Umask)); err != nil {
+				if err := c.fs.Chmod(c.SourceDir, 0o700&^c.Umask.FileMode()); err != nil {
 					return err
 				}
 			}
 		case os.IsNotExist(err):
-			if err := vfs.MkdirAll(c.fs, filepath.Dir(c.SourceDir), 0o777&^os.FileMode(c.Umask)); err != nil {
+			if err := vfs.MkdirAll(c.fs, filepath.Dir(c.SourceDir), 0o777&^c.Umask.FileMode()); err != nil {
 				return err
 			}
-			if err := c.fs.Mkdir(c.SourceDir, 0o700&^os.FileMode(c.Umask)); err != nil {
+			if err := c.fs.Mkdir(c.SourceDir, 0o700&^c.Umask.FileMode()); err != nil {
 				return err
 			}
 		case err == nil:

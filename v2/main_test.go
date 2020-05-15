@@ -166,7 +166,7 @@ func cmdMkHomeDir(ts *testscript.TestScript, neg bool, args []string) {
 			".bashrc": "# contents of .bashrc\n",
 			".binary": &vfst.File{
 				Perm:     0o755,
-				Contents: []byte("#/bin/sh\n"),
+				Contents: []byte("#!/bin/sh\n"),
 			},
 			".gitconfig": "[user]\n  email = user@home.org\n",
 			".hushlogin": "",
@@ -196,7 +196,7 @@ func cmdMkSourceDir(ts *testscript.TestScript, neg bool, args []string) {
 		ts.MkAbs(ts.Getenv("CHEZMOISOURCEDIR")): map[string]interface{}{
 			"dot_absent":            "",
 			"empty_dot_hushlogin":   "",
-			"executable_dot_binary": "#/bin/sh\n",
+			"executable_dot_binary": "#!/bin/sh\n",
 			"dot_bashrc":            "# contents of .bashrc\n",
 			"dot_gitconfig.tmpl":    "[user]\n  email = {{ \"user@home.org\" }}\n",
 			"private_dot_ssh": map[string]interface{}{

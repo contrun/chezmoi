@@ -29,7 +29,7 @@ stdout 'not in source state'
   ".binary": {
     "type": "file",
     "name": ".binary",
-    "contents": "#/bin/sh\n",
+    "contents": "#!/bin/sh\n",
     "perm": 493
   },
   ".gitconfig": {
@@ -63,7 +63,7 @@ stdout 'not in source state'
   "script": {
     "type": "script",
     "name": "script",
-    "contents": "#/bin/sh\necho script\n"
+    "contents": "#!/bin/sh\necho script\n"
   }
 }
 -- golden/dump-bashrc.json --
@@ -108,7 +108,7 @@ stdout 'not in source state'
   type: file
   name: .binary
   contents: |
-    #/bin/sh
+    #!/bin/sh
   perm: 493
 .gitconfig:
   type: file
@@ -140,5 +140,5 @@ script:
   type: script
   name: script
   contents: |
-    #/bin/sh
+    #!/bin/sh
     echo script
