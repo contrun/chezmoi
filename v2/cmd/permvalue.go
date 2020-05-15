@@ -5,20 +5,20 @@ import (
 	"strconv"
 )
 
-// An permValue is an uint that is scanned and printed in octal. It implements
-// the pflag.Value interface for use as a command line flag.
-type permValue uint
+// An permFlag represents permissions. It implements the pflag.Value interface
+// for use as a command line flag.
+type permFlag uint
 
-func (p *permValue) Set(s string) error {
+func (p *permFlag) Set(s string) error {
 	v, err := strconv.ParseUint(s, 8, 64)
-	*p = permValue(v)
+	*p = permFlag(v)
 	return err
 }
 
-func (p *permValue) String() string {
+func (p *permFlag) String() string {
 	return fmt.Sprintf("%03o", *p)
 }
 
-func (p *permValue) Type() string {
+func (p *permFlag) Type() string {
 	return "uint"
 }

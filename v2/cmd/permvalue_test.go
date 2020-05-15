@@ -11,7 +11,7 @@ func TestPermValue(t *testing.T) {
 	for _, tc := range []struct {
 		s              string
 		expectedErr    bool
-		expected       permValue
+		expected       permFlag
 		expectedString string
 	}{
 		{
@@ -48,7 +48,7 @@ func TestPermValue(t *testing.T) {
 		},
 	} {
 		t.Run(tc.s, func(t *testing.T) {
-			var p permValue
+			var p permFlag
 			err := p.Set(tc.s)
 			if tc.expectedErr {
 				require.Error(t, err)
