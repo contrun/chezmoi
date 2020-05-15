@@ -22,34 +22,34 @@ chezmoi managed --include=symlinks
 cmpenv stdout golden/managed-symlinks
 
 -- golden/managed --
-$HOME${/}.bashrc
-$HOME${/}.binary
-$HOME${/}.gitconfig
-$HOME${/}.hushlogin
-$HOME${/}.ssh
-$HOME${/}.ssh/config
-$HOME${/}.symlink
+$HOMESLASH${/}.bashrc
+$HOMESLASH${/}.binary
+$HOMESLASH${/}.gitconfig
+$HOMESLASH${/}.hushlogin
+$HOMESLASH${/}.ssh
+$HOMESLASH${/}.ssh/config
+$HOMESLASH${/}.symlink
 -- golden/managed-all --
-$HOME${/}.absent
-$HOME${/}.bashrc
-$HOME${/}.binary
-$HOME${/}.gitconfig
-$HOME${/}.hushlogin
-$HOME${/}.ssh
-$HOME${/}.ssh/config
-$HOME${/}.symlink
-$HOME${/}script
+$HOMESLASH${/}.absent
+$HOMESLASH${/}.bashrc
+$HOMESLASH${/}.binary
+$HOMESLASH${/}.gitconfig
+$HOMESLASH${/}.hushlogin
+$HOMESLASH${/}.ssh
+$HOMESLASH${/}.ssh/config
+$HOMESLASH${/}.symlink
+$HOMESLASH${/}script
 -- golden/managed-absent --
-$HOME${/}.absent
+$HOMESLASH${/}.absent
 -- golden/managed-dirs --
-$HOME${/}.ssh
+$HOMESLASH${/}.ssh
 -- golden/managed-files --
-$HOME${/}.bashrc
-$HOME${/}.binary
-$HOME${/}.gitconfig
-$HOME${/}.hushlogin
-$HOME${/}.ssh/config
+$HOMESLASH${/}.bashrc
+$HOMESLASH${/}.binary
+$HOMESLASH${/}.gitconfig
+$HOMESLASH${/}.hushlogin
+$HOMESLASH${/}.ssh/config
 -- golden/managed-scripts --
-$HOME${/}script
+$HOMESLASH${/}script
 -- golden/managed-symlinks --
-$HOME${/}.symlink
+$HOMESLASH${/}.symlink

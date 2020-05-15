@@ -46,6 +46,7 @@ func TestChezmoi(t *testing.T) {
 		Dir: filepath.Join("testdata", "scripts"),
 		Cmds: map[string]func(*testscript.TestScript, bool, []string){
 			"chhome":      cmdChHome,
+			"cmpmod":      cmdCmpMod,
 			"edit":        cmdEdit,
 			"mkfile":      cmdMkFile,
 			"mkhomedir":   cmdMkHomeDir,
@@ -89,6 +90,14 @@ func cmdChHome(ts *testscript.TestScript, neg bool, args []string) {
 	if runtime.GOOS == "windows" {
 		ts.Setenv("USERPROFILE", homeDir)
 	}
+}
+
+// cmdCmpMod compares modes.
+func cmdCmpMod(ts *testscript.TestScript, neg bool, args []string) {
+	if len(args) < 2 {
+		ts.Fatalf("usage: cmpmod mode paths...")
+	}
+
 }
 
 // cmdEdit edits all of its arguments by appending "# edited\n" to them.
@@ -193,7 +202,7 @@ func cmdMkSourceDir(ts *testscript.TestScript, neg bool, args []string) {
 			"private_dot_ssh": map[string]interface{}{
 				"config": "# contents of .ssh/config\n",
 			},
-			"run_script":          "#/bin/sh\necho script\n",
+			"run_script":          "#!/bin/sh\necho script\n",
 			"symlink_dot_symlink": ".bashrc\n",
 		},
 	})

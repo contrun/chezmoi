@@ -1,70 +1,49 @@
-stop # FIXME
+mkhomedir golden
+mksourcedir
 
 # test --dry-run
 chezmoi apply --dry-run
 ! exists $HOME/.bashrc
+! exists $HOME/.binary
+! exists $HOME/.gitconfig
+! exists $HOME/.hushlogin
 ! exists $HOME/.ssh
 ! exists $HOME/.symlink
-! exists $HOME/bin/command
 
 # test apply file
 chezmoi apply $HOME${/}.bashrc
 cmp $HOME/.bashrc golden/.bashrc
+! exists $HOME/.binary
+! exists $HOME/.gitconfig
+! exists $HOME/.hushlogin
 ! exists $HOME/.ssh
 ! exists $HOME/.symlink
-! exists $HOME/bin/command
 
 # test apply directory, non-recursive
 chezmoi apply --recursive=false $HOME${/}.ssh
+cmp $HOME/.bashrc golden/.bashrc
+! exists $HOME/.binary
+! exists $HOME/.gitconfig
+! exists $HOME/.hushlogin
 exists $HOME/.ssh
 ! exists $HOME/.ssh/config
 ! exists $HOME/.symlink
-! exists $HOME/bin/command
 
 # test apply directory
 chezmoi apply $HOME${/}.ssh
-cmp $HOME/.ssh/config golden/.ssh-config
+cmp $HOME/.bashrc golden/.bashrc
+! exists $HOME/.binary
+! exists $HOME/.gitconfig
+! exists $HOME/.hushlogin
+cmp $HOME/.ssh/config golden/.ssh/config
 ! exists $HOME/.symlink
-! exists $HOME/bin/command
 
 # test apply all
 chezmoi apply
-cmp $HOME/.symlink golden/.bashrc
-exists $HOME/bin/command
-
-# test change file permissions
-chmod 755 $HOME/.bashrc
-chezmoi apply
-[!windows] ! exec test -x $HOME/.bashrc
+stdout script
 cmp $HOME/.bashrc golden/.bashrc
-
-# test replace directory with file
-rm $HOME/.bashrc
-mkdir $HOME/.bashrc
-chezmoi apply
-cmp $HOME/.bashrc golden/.bashrc
-
-# test replace file with directory
-rm $HOME/.ssh
-mkfile $HOME/.ssh
-chezmoi apply
-cmp $HOME/.ssh/config golden/.ssh-config
-
-# test replace file with symlink
-rm $HOME/.symlink
-mkfile $HOME/.symlink
-chezmoi apply
+cmp $HOME/.binary golden/.binary
+cmp $HOME/.gitconfig golden/.gitconfig
+cmp $HOME/.hushlogin golden/.hushlogin
+cmp $HOME/.ssh/config golden/.ssh/config
 cmp $HOME/.symlink golden/.bashrc
-
--- golden/.bashrc --
-# contents of .bashrc
--- golden/.ssh-config --
-# contents of .ssh/config
--- home/user/.local/share/chezmoi/bin/executable_command --
-#!/bin/sh
--- home/user/.local/share/chezmoi/dot_bashrc --
-# contents of .bashrc
--- home/user/.local/share/chezmoi/private_dot_ssh/config --
-# contents of .ssh/config
--- home/user/.local/share/chezmoi/symlink_dot_symlink --
-.bashrc

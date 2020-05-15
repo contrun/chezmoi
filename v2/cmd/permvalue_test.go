@@ -46,6 +46,10 @@ func TestPermValue(t *testing.T) {
 			s:           "008",
 			expectedErr: true,
 		},
+		{
+			s:           "01000",
+			expectedErr: true,
+		},
 	} {
 		t.Run(tc.s, func(t *testing.T) {
 			var p permFlag
@@ -55,7 +59,7 @@ func TestPermValue(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, tc.expectedString, p.String())
-				assert.Equal(t, "uint", p.Type())
+				assert.Equal(t, "mode", p.Type())
 			}
 		})
 	}

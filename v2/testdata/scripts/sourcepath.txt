@@ -1,5 +1,3 @@
-# FIXME remove v1 error message matching
-
 chezmoi source-path
 cmpenv stdout golden/source-path
 
