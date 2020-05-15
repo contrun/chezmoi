@@ -362,6 +362,22 @@ func (c *Config) getPersistentStateFile() string {
 	return filepath.Join(filepath.Dir(getDefaultConfigFile(c.bds)), persistentStateFilename)
 }
 
+func (c *Config) getSourcePaths(s *chezmoi.SourceState, args []string) ([]string, error) {
+	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
+		mustBeInSourceState: true,
+		recursive:           false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	sourcePaths := make([]string, 0, len(targetNames))
+	for _, targetName := range targetNames {
+		sourcePath := s.MustEntry(targetName).Path()
+		sourcePaths = append(sourcePaths, sourcePath)
+	}
+	return sourcePaths, nil
+}
+
 func (c *Config) getSourceState() (*chezmoi.SourceState, error) {
 	defaultTemplateData, err := c.getDefaultTemplateData()
 	if err != nil {

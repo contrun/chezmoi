@@ -1,19 +1,12 @@
-[v2] stop # FIXME
-
-edit ${CHEZMOISOURCEDIR}/dot_bashrc
-grep -count=1 '# edited' ${CHEZMOISOURCEDIR}/dot_bashrc
-
-chezmoi apply
-grep -count=1 '# edited' $HOME/.bashrc
-
-edit ${CHEZMOISOURCEDIR}/dot_bashrc
-grep -count=2 '# edited' ${CHEZMOISOURCEDIR}/dot_bashrc
-
-chezmoi forget $HOME${/}.bashrc
+chezmoi forget --force $HOME${/}.bashrc
 ! exists ${CHEZMOISOURCEDIR}/dot_bashrc
+exists ${CHEZMOISOURCEDIR}/private_dot_ssh
+exists ${CHEZMOISOURCEDIR}/private_dot_ssh/config
 
-chezmoi apply
-grep -count=1 '# edited' $HOME/.bashrc
+chezmoi forget --force ${HOME}${/}.ssh
+! exists ${CHEZMOISOURCEDIR}/private_dot_ssh
 
 -- home/user/.local/share/chezmoi/dot_bashrc --
 # contents of .bashrc
+-- home/user/.local/share/chezmoi/private_dot_ssh/config --
+# contents of .ssh/config
