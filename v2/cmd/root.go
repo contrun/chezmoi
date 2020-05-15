@@ -21,14 +21,15 @@ const (
 
 var config = mustNewConfig()
 
-// Version information.
-var (
-	VersionStr string
-	Commit     string
-	Date       string
-	BuiltBy    string
-	Version    *semver.Version
-)
+// A VersionInfo contains a version.
+type VersionInfo struct {
+	Version string
+	Commit  string
+	Date    string
+	BuiltBy string
+}
+
+var version *semver.Version
 
 var rootCmd = &cobra.Command{
 	Use:                "chezmoi",
@@ -52,30 +53,30 @@ func init() {
 }
 
 // Execute executes the root command.
-func Execute() error {
+func Execute(v VersionInfo) error {
 	if initErr != nil {
 		return initErr
 	}
 
 	var versionComponents []string
-	if VersionStr != "" {
+	if v.Version != "" {
 		var err error
-		Version, err = semver.NewVersion(strings.TrimPrefix(VersionStr, "v"))
+		version, err = semver.NewVersion(strings.TrimPrefix(v.Version, "v"))
 		if err != nil {
 			return err
 		}
-		versionComponents = append(versionComponents, VersionStr)
+		versionComponents = append(versionComponents, v.Version)
 	} else {
 		versionComponents = append(versionComponents, "dev")
 	}
-	if Commit != "" {
-		versionComponents = append(versionComponents, "commit "+Commit)
+	if v.Commit != "" {
+		versionComponents = append(versionComponents, "commit "+v.Commit)
 	}
-	if Date != "" {
-		versionComponents = append(versionComponents, "built at "+Date)
+	if v.Date != "" {
+		versionComponents = append(versionComponents, "built at "+v.Date)
 	}
-	if BuiltBy != "" {
-		versionComponents = append(versionComponents, "built by "+BuiltBy)
+	if v.BuiltBy != "" {
+		versionComponents = append(versionComponents, "built by "+v.BuiltBy)
 	}
 	rootCmd.Version = strings.Join(versionComponents, ", ")
 

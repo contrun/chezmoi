@@ -19,11 +19,12 @@ var (
 )
 
 func run() error {
-	cmd.VersionStr = version
-	cmd.Commit = commit
-	cmd.Date = date
-	cmd.BuiltBy = builtBy
-	return cmd.Execute()
+	return cmd.Execute(cmd.VersionInfo{
+		Version: version,
+		Commit:  commit,
+		Date:    date,
+		BuiltBy: builtBy,
+	})
 }
 
 func main() {

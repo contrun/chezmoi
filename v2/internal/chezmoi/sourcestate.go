@@ -268,7 +268,6 @@ func (s *SourceState) Read() error {
 		case info.Name() == versionName:
 			return s.addVersionFile(sourcePath)
 		case strings.HasPrefix(info.Name(), chezmoiPrefix):
-			// FIXME accumulate warning about unrecognized special file
 			fallthrough
 		case strings.HasPrefix(info.Name(), ignorePrefix):
 			if info.IsDir() {
