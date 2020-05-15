@@ -29,9 +29,9 @@ func TestChezmoi(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir: filepath.Join("testdata", "scripts"),
 		Cmds: map[string]func(*testscript.TestScript, bool, []string){
-			"chhome": chhome,
-			"edit":   edit,
-			"mkfile": mkfile,
+			"chhome": cmdChhome,
+			"edit":   cmdEdit,
+			"mkfile": cmdMkFile,
 		},
 		Condition: func(cond string) (bool, error) {
 			switch cond {
@@ -58,10 +58,10 @@ func testRun() int {
 	return 0
 }
 
-// chHome changes the home directory to its argument, creating the directory if
-// it does not already exists. It updates the HOME environment variable, and, if
-// running on Windows, USERPROFILE too.
-func chhome(ts *testscript.TestScript, neg bool, args []string) {
+// cmdChhome changes the home directory to its argument, creating the directory
+// if it does not already exists. It updates the HOME environment variable, and,
+// if running on Windows, USERPROFILE too.
+func cmdChhome(ts *testscript.TestScript, neg bool, args []string) {
 	if neg {
 		ts.Fatalf("unsupported: ! chhome")
 	}
@@ -80,8 +80,8 @@ func chhome(ts *testscript.TestScript, neg bool, args []string) {
 	}
 }
 
-// edit edits all of its arguments by appending "# edited\n" to them.
-func edit(ts *testscript.TestScript, neg bool, args []string) {
+// cmdEdit edits all of its arguments by appending "# edited\n" to them.
+func cmdEdit(ts *testscript.TestScript, neg bool, args []string) {
 	if neg {
 		ts.Fatalf("unsupported: ! edit")
 	}
@@ -99,8 +99,8 @@ func edit(ts *testscript.TestScript, neg bool, args []string) {
 	}
 }
 
-// mkfile creates empty files.
-func mkfile(ts *testscript.TestScript, neg bool, args []string) {
+// cmdMkFile creates empty files.
+func cmdMkFile(ts *testscript.TestScript, neg bool, args []string) {
 	if neg {
 		ts.Fatalf("unsupported: ! mkfile")
 	}
