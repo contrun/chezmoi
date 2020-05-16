@@ -1,0 +1,6 @@
+mksourcedir
+
+# test duplicate target detection
+cp $CHEZMOISOURCEDIR/dot_bashrc $CHEZMOISOURCEDIR/empty_dot_bashrc
+! chezmoi diff # FIXME use verify
+stderr 'duplicate target'
