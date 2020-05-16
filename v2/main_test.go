@@ -97,7 +97,6 @@ func cmdCmpMod(ts *testscript.TestScript, neg bool, args []string) {
 	if len(args) < 2 {
 		ts.Fatalf("usage: cmpmod mode paths...")
 	}
-
 }
 
 // cmdEdit edits all of its arguments by appending "# edited\n" to them.
@@ -179,7 +178,8 @@ func cmdMkHomeDir(ts *testscript.TestScript, neg bool, args []string) {
 			".symlink": &vfst.Symlink{
 				Target: ".bashrc",
 			},
-		}}); err != nil {
+		},
+	}); err != nil {
 		ts.Fatalf("mkhomedir: %v", err)
 	}
 }
