@@ -13,5 +13,5 @@ exists $HOME/.inputrc
 ! exists $HOME/.ssh/config
 
 ! chezmoi remove --force $HOME${/}.bashrc $HOME${/}.inputrc
-stdout 'not in source state'
+stderr 'not in source state'
 exists $HOME/.inputrc

@@ -8,4 +8,4 @@ chezmoi completion zsh
 stdout '#compdef _chezmoi chezmoi'
 
 ! chezmoi completion ksh
-stdout 'unsupported shell'
+stderr 'unsupported shell'

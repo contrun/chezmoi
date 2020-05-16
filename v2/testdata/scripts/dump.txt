@@ -16,7 +16,7 @@ chezmoi dump --format=yaml
 cmp stdout golden/dump.yaml
 
 ! chezmoi dump $HOME${/}.inputrc
-stdout 'not in source state'
+stderr 'not in source state'
 
 -- golden/dump.json --
 {

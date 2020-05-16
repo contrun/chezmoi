@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 				BuiltBy: "testscript",
 			}); err != nil {
 				if s := err.Error(); s != "" {
-					fmt.Printf("chezmoi: %s\n", s)
+					fmt.Fprintf(os.Stderr, "chezmoi: %s\n", s)
 				}
 				return 1
 			}

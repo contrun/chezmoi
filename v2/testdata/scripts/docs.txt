@@ -8,7 +8,7 @@ chezmoi docs quickstart
 stdout 'chezmoi Quick Start Guide'
 
 ! chezmoi docs a
-stdout 'ambiguous pattern'
+stderr 'ambiguous pattern'
 
 ! chezmoi docs z
-stdout 'no matching files'
+stderr 'no matching files'

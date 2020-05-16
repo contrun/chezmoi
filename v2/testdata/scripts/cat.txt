@@ -11,10 +11,10 @@ chezmoi cat $HOME${/}.symlink
 stdout '\.bashrc'
 
 ! chezmoi cat $HOME${/}.ssh
-stdout 'not a file or symlink'
+stderr 'not a file or symlink'
 
 ! chezmoi cat ${/}etc${/}passwd
-stdout 'not in destination directory'
+stderr 'not in destination directory'
 
 cd $HOME
 chezmoi cat .gitconfig
