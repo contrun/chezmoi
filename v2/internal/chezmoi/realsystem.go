@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/google/renameio"
@@ -48,9 +47,6 @@ func (s *RealSystem) Glob(pattern string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	for i, match := range matches {
-		matches[i] = filepath.ToSlash(match)
-	}
 	return matches, nil
 }
 
@@ -92,7 +88,7 @@ func (s *RealSystem) RunScript(scriptname string, data []byte) (err error) {
 	// Run the temporary script file.
 	//nolint:gosec
 	c := exec.Command(f.Name())
-	// c.Dir = path.Join(applyOptions.DestDir, filepath.Dir(s.targetName)) // FIXME
+	// c.Dir = path.Join(applyOptions.DestDir, path.Dir(s.targetName)) // FIXME
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr

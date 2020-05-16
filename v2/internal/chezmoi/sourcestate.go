@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
@@ -249,9 +248,8 @@ func (s *SourceState) Read() error {
 
 	// Read all source entries.
 	allSourceStateEntries := make(map[string][]SourceStateEntry)
-	sourceDirPrefix := filepath.ToSlash(s.sourcePath) + PathSeparatorStr
-	if err := vfs.Walk(s.system, s.sourcePath, func(sourcePath string, info os.FileInfo, err error) error {
-		sourcePath = filepath.ToSlash(sourcePath)
+	sourceDirPrefix := s.sourcePath + PathSeparatorStr
+	if err := vfs.WalkSlash(s.system, s.sourcePath, func(sourcePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -272,14 +270,14 @@ func (s *SourceState) Read() error {
 			if err := s.addTemplatesDir(sourcePath); err != nil {
 				return err
 			}
-			return filepath.SkipDir
+			return vfs.SkipDir
 		case info.Name() == versionName:
 			return s.addVersionFile(sourcePath)
 		case strings.HasPrefix(info.Name(), chezmoiPrefix):
 			fallthrough
 		case strings.HasPrefix(info.Name(), ignorePrefix):
 			if info.IsDir() {
-				return filepath.SkipDir
+				return vfs.SkipDir
 			}
 			return nil
 		case info.IsDir():
@@ -385,7 +383,7 @@ func (s *SourceState) addPatterns(patternSet *PatternSet, sourcePath, relPath st
 	if err != nil {
 		return err
 	}
-	dir := filepath.Dir(relPath)
+	dir := path.Dir(relPath)
 	scanner := bufio.NewScanner(bytes.NewReader(data))
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -432,9 +430,8 @@ func (s *SourceState) addTemplateData(sourcePath string) error {
 }
 
 func (s *SourceState) addTemplatesDir(templateDir string) error {
-	templateDirPrefix := filepath.ToSlash(templateDir) + PathSeparatorStr
-	return vfs.Walk(s.system, templateDir, func(templatePath string, info os.FileInfo, err error) error {
-		templatePath = filepath.ToSlash(templatePath)
+	templateDirPrefix := templateDir + PathSeparatorStr
+	return vfs.WalkSlash(s.system, templateDir, func(templatePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

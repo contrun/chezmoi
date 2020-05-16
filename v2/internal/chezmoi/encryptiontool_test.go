@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	"testing"
 
@@ -45,7 +45,7 @@ func (t *testEncryptionTool) DecryptToFile(filenameHint string, ciphertext []byt
 		return os.RemoveAll(tempDir)
 	}
 
-	filename = filepath.Join(tempDir, filepath.Base(filenameHint))
+	filename = path.Join(tempDir, path.Base(filenameHint))
 	if err = ioutil.WriteFile(filename, t.xorWithKey(ciphertext), 0o600); err != nil {
 		err = multierr.Append(err, cleanupFunc())
 		return

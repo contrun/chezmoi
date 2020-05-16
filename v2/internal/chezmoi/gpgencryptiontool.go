@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"path"
 
 	"go.uber.org/multierr"
 )
@@ -41,7 +41,7 @@ func (t *GPGEncryptionTool) DecryptToFile(filenameHint string, ciphertext []byte
 		return os.RemoveAll(tempDir)
 	}
 
-	filename = filepath.Join(tempDir, filepath.Base(filenameHint))
+	filename = path.Join(tempDir, path.Base(filenameHint))
 	inputFilename := filename + ".gpg"
 	if err = ioutil.WriteFile(inputFilename, ciphertext, 0o600); err != nil {
 		err = multierr.Append(err, cleanupFunc())
@@ -100,7 +100,7 @@ func (t *GPGEncryptionTool) EncryptFile(filename string) (ciphertext []byte, err
 		err = multierr.Append(err, os.RemoveAll(tempDir))
 	}()
 
-	outputFilename := filepath.Join(tempDir, filepath.Base(filename)+".gpg")
+	outputFilename := path.Join(tempDir, path.Base(filename)+".gpg")
 	args := []string{
 		"--armor",
 		"--encrypt",

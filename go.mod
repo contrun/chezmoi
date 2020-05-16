@@ -40,7 +40,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/twpayne/go-shell v0.2.0
-	github.com/twpayne/go-vfs v1.4.0
+	github.com/twpayne/go-vfs v1.4.2
 	github.com/twpayne/go-vfsafero v1.0.0
 	github.com/twpayne/go-xdg/v3 v3.1.0
 	github.com/yuin/goldmark v1.1.28 // indirect

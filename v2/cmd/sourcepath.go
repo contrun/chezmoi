@@ -23,7 +23,7 @@ func init() {
 
 func (c *Config) runSourcePathCmd(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		return c.writeOutputString(c.SourceDir + eolStr)
+		return c.writeOutputString(filepath.FromSlash(c.SourceDir + eolStr))
 	}
 
 	s, err := c.getSourceState()
