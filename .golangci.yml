@@ -46,12 +46,11 @@ linters:
   - testpackage
   - wsl
 
-# FIXME add path/filepath to gomodguard with reason "internal package uses forward slash separated paths only"
 linters-settings:
   goimports:
     local-prefixes: github.com/twpayne/chezmoi
 
-issues:
+    issues:
   exclude-rules:
   - linters:
     - dupl
