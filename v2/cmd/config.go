@@ -357,6 +357,17 @@ func (c *Config) getDefaultTemplateData() (map[string]interface{}, error) {
 	}, nil
 }
 
+func (c *Config) getDestPath(arg string) (string, error) {
+	if !filepath.IsAbs(arg) {
+		arg = filepath.Join(c.workingDir, arg)
+	}
+	arg = filepath.ToSlash(filepath.Clean(arg))
+	if !strings.HasPrefix(arg, c.DestDir+chezmoi.PathSeparatorStr) {
+		return "", fmt.Errorf("%s: not in destination directory", arg)
+	}
+	return arg, nil
+}
+
 func (c *Config) getPersistentState(options *bolt.Options) (chezmoi.PersistentState, error) {
 	persistentStateFile := c.getPersistentStateFile()
 	if c.dryRun {
@@ -421,15 +432,11 @@ func (c *Config) getSourceState() (*chezmoi.SourceState, error) {
 }
 
 func (c *Config) getTargetName(arg string) (string, error) {
-	if !filepath.IsAbs(arg) {
-		arg = filepath.Join(c.workingDir, arg)
+	destPath, err := c.getDestPath(arg)
+	if err != nil {
+		return "", err
 	}
-	arg = filepath.ToSlash(filepath.Clean(arg))
-	destDirPrefix := c.DestDir + chezmoi.PathSeparatorStr
-	if !strings.HasPrefix(arg, destDirPrefix) {
-		return "", fmt.Errorf("%s: not in destination directory", arg)
-	}
-	return strings.TrimPrefix(arg, destDirPrefix), nil
+	return strings.TrimPrefix(destPath, c.DestDir+chezmoi.PathSeparatorStr), nil
 }
 
 type getTargetNamesOptions struct {

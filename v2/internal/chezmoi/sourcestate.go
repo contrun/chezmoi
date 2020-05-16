@@ -100,9 +100,42 @@ func NewSourceState(options ...SourceStateOption) *SourceState {
 	return s
 }
 
+// AddOptions are options to SourceState.Add.
+type AddOptions struct {
+	AutoTemplate bool
+	Empty        bool
+	Encrypt      bool
+	Exact        bool
+	Follow       bool
+	Recursive    bool
+	Template     bool
+}
+
 // Add adds sourceStateEntry to s.
-func (s *SourceState) Add() error {
-	return nil // FIXME
+func (s *SourceState) Add(system System, destDir string, destPaths []string, options *AddOptions) error {
+	destDirPrefix := destDir + PathSeparatorStr
+	for _, destPath := range destPaths {
+		if !strings.HasPrefix(destPath, destDirPrefix) {
+			return fmt.Errorf("%s: not in destination directory", destPath)
+		}
+		var err error
+		var info os.FileInfo
+		if options != nil && options.Follow {
+			info, err = system.Stat(destPath)
+		} else {
+			info, err = system.Lstat(destPath)
+		}
+		if err != nil {
+			return err
+		}
+		if err := s.addOne(system, destPath, info, options); err != nil {
+			return err
+		}
+		if info.IsDir() && options != nil && options.Recursive {
+			// FIXME
+		}
+	}
+	return nil
 }
 
 // ApplyAll updates targetDir in fs to match s.
@@ -127,7 +160,7 @@ func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targ
 	}
 
 	targetPath := path.Join(targetDir, targetName)
-	destStateEntry, err := NewDestStateEntry(system, targetPath)
+	destStateEntry, err := NewDestStateEntry(system, targetPath, nil)
 	if err != nil {
 		return err
 	}
@@ -376,6 +409,10 @@ func (s *SourceState) Remove(system System, targetDir string) error {
 // TemplateData returns s's template data.
 func (s *SourceState) TemplateData() map[string]interface{} {
 	return s.templateData
+}
+
+func (s *SourceState) addOne(system System, destPath string, info os.FileInfo, options *AddOptions) error {
+	return nil // FIXME
 }
 
 func (s *SourceState) addPatterns(patternSet *PatternSet, sourcePath, relPath string) error {

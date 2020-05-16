@@ -35,9 +35,20 @@ type DestStateSymlink struct {
 	*lazyLinkname
 }
 
+// NewDestStateEntryOptions are options for NewDestState.
+type NewDestStateEntryOptions struct {
+	Follow bool
+}
+
 // NewDestStateEntry returns a new DestStateEntry populated with path from fs.
-func NewDestStateEntry(s System, path string) (DestStateEntry, error) {
-	info, err := s.Lstat(path)
+func NewDestStateEntry(s System, path string, options *NewDestStateEntryOptions) (DestStateEntry, error) {
+	var info os.FileInfo
+	var err error
+	if options != nil && options.Follow {
+		info, err = s.Stat(path)
+	} else {
+		info, err = s.Lstat(path)
+	}
 	switch {
 	case os.IsNotExist(err):
 		return &DestStateAbsent{

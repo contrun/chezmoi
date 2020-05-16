@@ -117,7 +117,7 @@ func TestTargetStateEntryApplyAndEqual(t *testing.T) {
 					fs := NewRealSystem(testFS, newTestPersistentState())
 
 					// Read the initial destination state entry from fs.
-					destStateEntry, err := NewDestStateEntry(fs, "/home/user/foo")
+					destStateEntry, err := NewDestStateEntry(fs, "/home/user/foo", nil)
 					require.NoError(t, err)
 
 					// Apply the target state entry.
@@ -129,7 +129,7 @@ func TestTargetStateEntryApplyAndEqual(t *testing.T) {
 
 					// Read the updated destination state entry from fs and
 					// verify that it is equal to the target state entry.
-					newDestStateEntry, err := NewDestStateEntry(fs, "/home/user/foo")
+					newDestStateEntry, err := NewDestStateEntry(fs, "/home/user/foo", nil)
 					require.NoError(t, err)
 					equal, err := tc1.targetStateEntry.Equal(newDestStateEntry)
 					require.NoError(t, err)
