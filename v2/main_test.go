@@ -46,7 +46,6 @@ func TestChezmoi(t *testing.T) {
 		Dir: filepath.Join("testdata", "scripts"),
 		Cmds: map[string]func(*testscript.TestScript, bool, []string){
 			"chhome":      cmdChHome,
-			"cmpmod":      cmdCmpMod,
 			"edit":        cmdEdit,
 			"mkfile":      cmdMkFile,
 			"mkhomedir":   cmdMkHomeDir,
@@ -89,13 +88,6 @@ func cmdChHome(ts *testscript.TestScript, neg bool, args []string) {
 	ts.Setenv("CHEZMOISOURCEDIR", chezmoiSourceDir)
 	if runtime.GOOS == "windows" {
 		ts.Setenv("USERPROFILE", homeDir)
-	}
-}
-
-// cmdCmpMod compares modes.
-func cmdCmpMod(ts *testscript.TestScript, neg bool, args []string) {
-	if len(args) < 2 {
-		ts.Fatalf("usage: cmpmod mode paths...")
 	}
 }
 
