@@ -127,9 +127,15 @@ func (s *SourceState) Add(system System, destPaths []string, options *AddOptions
 		if err := s.addOne(system, destPath, info, options); err != nil {
 			return err
 		}
-		//nolint:staticcheck
 		if info.IsDir() && options != nil && options.Recursive {
-			// FIXME
+			if err := vfs.WalkSlash(system, destPath, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				return s.addOne(system, path, info, options)
+			}); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -409,7 +415,74 @@ func (s *SourceState) TemplateData() map[string]interface{} {
 }
 
 func (s *SourceState) addOne(system System, destPath string, info os.FileInfo, options *AddOptions) error {
-	return nil // FIXME
+	destStateEntry, err := NewDestStateEntry(system, destPath, &NewDestStateEntryOptions{
+		Follow: options.Follow,
+	})
+	if err != nil {
+		return err
+	}
+	// FIXME create parents
+	sourcePath := "" // FIXME
+	switch destStateEntry := destStateEntry.(type) {
+	case *DestStateAbsent:
+		return fmt.Errorf("%s: not found", destPath)
+	case *DestStateDir:
+		sourceStateDir := &SourceStateDir{
+			path: sourcePath,
+			attributes: dirAttributes{
+				Name:    info.Name(),
+				Exact:   options.Exact,
+				Private: POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
+			},
+		}
+		_ = sourceStateDir
+	case *DestStateFile:
+		contents, err := destStateEntry.Contents()
+		if err != nil {
+			return err
+		}
+		if options.AutoTemplate {
+			contents = autoTemplate(contents, s.TemplateData())
+		}
+		sourceStateFile := &SourceStateFile{
+			path: sourcePath,
+			attributes: fileAttributes{
+				Name:       info.Name(),
+				Type:       sourceFileTypeFile,
+				Empty:      options.Empty,
+				Encrypted:  options.Encrypt,
+				Executable: POSIXFileModes && info.Mode()&os.ModePerm&0o111 != 0,
+				Private:    POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
+				Template:   options.Template || options.AutoTemplate,
+			},
+			lazyContents: &lazyContents{
+				contents: contents,
+			},
+		}
+		_ = sourceStateFile
+	case *DestStateSymlink:
+		linkname, err := destStateEntry.Linkname()
+		if err != nil {
+			return err
+		}
+		contents := []byte(linkname)
+		if options.AutoTemplate {
+			contents = autoTemplate(contents, s.TemplateData())
+		}
+		sourceStateFile := &SourceStateFile{
+			path: sourcePath, // FIXME
+			attributes: fileAttributes{
+				Name:     info.Name(),
+				Type:     sourceFileTypeSymlink,
+				Template: options.Template || options.AutoTemplate,
+			},
+			lazyContents: &lazyContents{
+				contents: contents,
+			},
+		}
+		_ = sourceStateFile
+	}
+	return nil
 }
 
 func (s *SourceState) addPatterns(patternSet *PatternSet, sourcePath, relPath string) error {
