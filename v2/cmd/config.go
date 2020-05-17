@@ -34,6 +34,7 @@ type templateConfig struct {
 }
 
 // A Config represents a configuration.
+// FIXME organize this better, e.g. move stdin & co next to homeDir & co
 type Config struct {
 	homeDir    string
 	workingDir string
