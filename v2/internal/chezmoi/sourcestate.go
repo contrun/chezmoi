@@ -127,6 +127,7 @@ func (s *SourceState) Add(system System, destPaths []string, options *AddOptions
 		if err := s.addOne(system, destPath, info, options); err != nil {
 			return err
 		}
+		//nolint:staticcheck
 		if info.IsDir() && options != nil && options.Recursive {
 			// FIXME
 		}
