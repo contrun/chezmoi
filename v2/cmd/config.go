@@ -55,7 +55,6 @@ type Config struct {
 	Recursive bool
 	Remove    bool
 	Color     string
-	Git       gitCmdConfig
 	Data      map[string]interface{}
 	Template  templateConfig
 
@@ -81,6 +80,7 @@ type Config struct {
 	// Command configurations, settable in the config file.
 	CD   cdCmdConfig
 	Diff diffCmdConfig
+	Git  gitCmdConfig
 
 	// Command configurations, not settable in the config file.
 	add             addCmdConfig
