@@ -38,11 +38,17 @@ func init() {
 }
 
 func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
+	destPaths, err := c.getDestPaths(args)
+	if err != nil {
+		return err
+	}
+
 	s, err := c.getSourceState()
 	if err != nil {
 		return err
 	}
-	return s.Add(c.system, c.DestDir, args, &chezmoi.AddOptions{
+
+	return s.Add(c.system, destPaths, &chezmoi.AddOptions{
 		AutoTemplate: c.add.autoTemplate,
 		Empty:        c.add.empty,
 		Encrypt:      c.add.encrypt,

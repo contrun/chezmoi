@@ -112,12 +112,8 @@ type AddOptions struct {
 }
 
 // Add adds sourceStateEntry to s.
-func (s *SourceState) Add(system System, destDir string, destPaths []string, options *AddOptions) error {
-	destDirPrefix := destDir + PathSeparatorStr
+func (s *SourceState) Add(system System, destPaths []string, options *AddOptions) error {
 	for _, destPath := range destPaths {
-		if !strings.HasPrefix(destPath, destDirPrefix) {
-			return fmt.Errorf("%s: not in destination directory", destPath)
-		}
 		var err error
 		var info os.FileInfo
 		if options != nil && options.Follow {

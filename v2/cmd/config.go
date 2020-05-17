@@ -369,6 +369,18 @@ func (c *Config) getDestPath(arg string) (string, error) {
 	return arg, nil
 }
 
+func (c *Config) getDestPaths(args []string) ([]string, error) {
+	destPaths := make([]string, 0, len(args))
+	for _, arg := range args {
+		destPath, err := c.getDestPath(arg)
+		if err != nil {
+			return nil, err
+		}
+		destPaths = append(destPaths, destPath)
+	}
+	return destPaths, nil
+}
+
 func (c *Config) getPersistentState(options *bolt.Options) (chezmoi.PersistentState, error) {
 	persistentStateFile := c.getPersistentStateFile()
 	if c.dryRun {
