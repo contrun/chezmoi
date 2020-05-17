@@ -39,7 +39,7 @@ func init() {
 }
 
 func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
-	destPaths, err := c.getDestPaths(args)
+	destPathInfos, err := c.getDestPathInfos(args)
 	if err != nil {
 		return err
 	}
@@ -49,13 +49,13 @@ func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	return s.Add(c.system, destPaths, &chezmoi.AddOptions{
+	return s.Add(c.system, c.DestDir, destPathInfos, &chezmoi.AddOptions{
 		AutoTemplate: c.add.autoTemplate,
 		Empty:        c.add.empty,
 		Encrypt:      c.add.encrypt,
 		Exact:        c.add.exact,
 		Follow:       c.Follow,
-		Recursive:    c.Recursive,
 		Template:     c.add.template,
+		Umask:        c.Umask.FileMode(),
 	})
 }

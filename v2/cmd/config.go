@@ -369,16 +369,43 @@ func (c *Config) getDestPath(arg string) (string, error) {
 	return arg, nil
 }
 
-func (c *Config) getDestPaths(args []string) ([]string, error) {
-	destPaths := make([]string, 0, len(args))
+func (c *Config) getDestPathInfos(args []string) (map[string]os.FileInfo, error) {
+	destPathInfos := make(map[string]os.FileInfo)
 	for _, arg := range args {
 		destPath, err := c.getDestPath(arg)
 		if err != nil {
 			return nil, err
 		}
-		destPaths = append(destPaths, destPath)
+		if _, ok := destPathInfos[destPath]; ok {
+			continue
+		}
+		if c.Recursive {
+			if err := vfs.WalkSlash(c.fs, destPath, func(destPath string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if _, ok := destPathInfos[destPath]; info.IsDir() && ok {
+					return vfs.SkipDir
+				}
+				destPathInfos[destPath] = info
+				return nil
+			}); err != nil {
+				return nil, err
+			}
+		} else {
+			var info os.FileInfo
+			if c.Follow {
+				info, err = c.fs.Stat(destPath)
+			} else {
+				info, err = c.fs.Lstat(destPath)
+			}
+			if err != nil {
+				return nil, err
+			}
+			destPathInfos[destPath] = info
+		}
 	}
-	return destPaths, nil
+	return destPathInfos, nil
 }
 
 func (c *Config) getPersistentState(options *bolt.Options) (chezmoi.PersistentState, error) {

@@ -107,38 +107,31 @@ type AddOptions struct {
 	Encrypt      bool
 	Exact        bool
 	Follow       bool
-	Recursive    bool
 	Template     bool
+	Umask        os.FileMode
 }
 
 // Add adds sourceStateEntry to s.
-func (s *SourceState) Add(system System, destPaths []string, options *AddOptions) error {
+func (s *SourceState) Add(system System, destDir string, destPathInfos map[string]os.FileInfo, options *AddOptions) error {
+	destPaths := make([]string, 0, len(destPathInfos))
+	for destPath := range destPathInfos {
+		destPaths = append(destPaths, destPath)
+	}
+	sort.Strings(destPaths)
+	targetSourceState := &SourceState{
+		entries: make(map[string]SourceStateEntry),
+	}
 	for _, destPath := range destPaths {
-		var err error
-		var info os.FileInfo
-		if options != nil && options.Follow {
-			info, err = system.Stat(destPath)
-		} else {
-			info, err = system.Lstat(destPath)
-		}
+		// FIXME rename/remove old
+		targetName := strings.TrimPrefix(destPath, destDir+PathSeparatorStr)
+		sourceStateEntry, err := s.sourceStateEntry(system, destPath, destPathInfos[destPath], options)
 		if err != nil {
 			return err
 		}
-		if err := s.addOne(system, destPath, info, options); err != nil {
-			return err
-		}
-		if info.IsDir() && options != nil && options.Recursive {
-			if err := vfs.WalkSlash(system, destPath, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-				return s.addOne(system, path, info, options)
-			}); err != nil {
-				return err
-			}
-		}
+		targetSourceState.entries[targetName] = sourceStateEntry
 	}
-	return nil
+	// FIXME include
+	return targetSourceState.ApplyAll(system, options.Umask, s.sourcePath, NewIncludeBits(IncludeAll))
 }
 
 // ApplyAll updates targetDir in fs to match s.
@@ -414,77 +407,6 @@ func (s *SourceState) TemplateData() map[string]interface{} {
 	return s.templateData
 }
 
-func (s *SourceState) addOne(system System, destPath string, info os.FileInfo, options *AddOptions) error {
-	destStateEntry, err := NewDestStateEntry(system, destPath, &NewDestStateEntryOptions{
-		Follow: options.Follow,
-	})
-	if err != nil {
-		return err
-	}
-	// FIXME create parents
-	sourcePath := "" // FIXME
-	switch destStateEntry := destStateEntry.(type) {
-	case *DestStateAbsent:
-		return fmt.Errorf("%s: not found", destPath)
-	case *DestStateDir:
-		sourceStateDir := &SourceStateDir{
-			path: sourcePath,
-			attributes: dirAttributes{
-				Name:    info.Name(),
-				Exact:   options.Exact,
-				Private: POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
-			},
-		}
-		_ = sourceStateDir
-	case *DestStateFile:
-		contents, err := destStateEntry.Contents()
-		if err != nil {
-			return err
-		}
-		if options.AutoTemplate {
-			contents = autoTemplate(contents, s.TemplateData())
-		}
-		sourceStateFile := &SourceStateFile{
-			path: sourcePath,
-			attributes: fileAttributes{
-				Name:       info.Name(),
-				Type:       sourceFileTypeFile,
-				Empty:      options.Empty,
-				Encrypted:  options.Encrypt,
-				Executable: POSIXFileModes && info.Mode()&os.ModePerm&0o111 != 0,
-				Private:    POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
-				Template:   options.Template || options.AutoTemplate,
-			},
-			lazyContents: &lazyContents{
-				contents: contents,
-			},
-		}
-		_ = sourceStateFile
-	case *DestStateSymlink:
-		linkname, err := destStateEntry.Linkname()
-		if err != nil {
-			return err
-		}
-		contents := []byte(linkname)
-		if options.AutoTemplate {
-			contents = autoTemplate(contents, s.TemplateData())
-		}
-		sourceStateFile := &SourceStateFile{
-			path: sourcePath, // FIXME
-			attributes: fileAttributes{
-				Name:     info.Name(),
-				Type:     sourceFileTypeSymlink,
-				Template: options.Template || options.AutoTemplate,
-			},
-			lazyContents: &lazyContents{
-				contents: contents,
-			},
-		}
-		_ = sourceStateFile
-	}
-	return nil
-}
-
 func (s *SourceState) addPatterns(patternSet *PatternSet, sourcePath, relPath string) error {
 	data, err := s.executeTemplate(sourcePath)
 	if err != nil {
@@ -713,6 +635,75 @@ func (s *SourceState) sortedTargetNames() []string {
 	}
 	sort.Strings(targetNames)
 	return targetNames
+}
+
+func (s *SourceState) sourceStateEntry(system System, destPath string, info os.FileInfo, options *AddOptions) (SourceStateEntry, error) {
+	destStateEntry, err := NewDestStateEntry(system, destPath, &NewDestStateEntryOptions{
+		Follow: options.Follow,
+	})
+	if err != nil {
+		return nil, err
+	}
+	// FIXME create parents
+	sourcePath := "" // FIXME
+	switch destStateEntry := destStateEntry.(type) {
+	case *DestStateAbsent:
+		return nil, fmt.Errorf("%s: not found", destPath)
+	case *DestStateDir:
+		return &SourceStateDir{
+			path: sourcePath,
+			attributes: dirAttributes{
+				Name:    info.Name(),
+				Exact:   options.Exact,
+				Private: POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
+			},
+		}, nil
+	case *DestStateFile:
+		contents, err := destStateEntry.Contents()
+		if err != nil {
+			return nil, err
+		}
+		if options.AutoTemplate {
+			contents = autoTemplate(contents, s.TemplateData())
+		}
+		return &SourceStateFile{
+			path: sourcePath,
+			attributes: fileAttributes{
+				Name:       info.Name(),
+				Type:       sourceFileTypeFile,
+				Empty:      options.Empty,
+				Encrypted:  options.Encrypt,
+				Executable: POSIXFileModes && info.Mode()&os.ModePerm&0o111 != 0,
+				Private:    POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
+				Template:   options.Template || options.AutoTemplate,
+			},
+			lazyContents: &lazyContents{
+				contents: contents,
+			},
+		}, nil
+	case *DestStateSymlink:
+		linkname, err := destStateEntry.Linkname()
+		if err != nil {
+			return nil, err
+		}
+		contents := []byte(linkname)
+		if options.AutoTemplate {
+			contents = autoTemplate(contents, s.TemplateData())
+		}
+		return &SourceStateFile{
+			path: sourcePath, // FIXME
+			attributes: fileAttributes{
+				Name:     info.Name(),
+				Type:     sourceFileTypeSymlink,
+				Template: options.Template || options.AutoTemplate,
+			},
+			lazyContents: &lazyContents{
+				contents: contents,
+			},
+		}, nil
+	default:
+		panic(fmt.Sprintf("%T: unsupported type", destStateEntry))
+	}
 }
 
 // getTargetDirName returns the target directory name of sourceDirName.
