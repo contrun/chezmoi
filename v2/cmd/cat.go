@@ -30,7 +30,7 @@ func (c *Config) runCatCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
-		recursive:           c.recursive,
+		recursive:           c.Recursive,
 		mustBeInSourceState: true,
 	})
 	if err != nil {

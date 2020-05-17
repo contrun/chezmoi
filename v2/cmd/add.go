@@ -48,7 +48,7 @@ func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
 		Encrypt:      c.add.encrypt,
 		Exact:        c.add.exact,
 		Follow:       c.Follow,
-		Recursive:    c.recursive,
+		Recursive:    c.Recursive,
 		Template:     c.add.template,
 	})
 }

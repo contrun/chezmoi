@@ -51,6 +51,7 @@ type Config struct {
 	Umask     fileMode
 	Format    string
 	Follow    bool
+	Recursive bool
 	Remove    bool
 	Color     string
 	Git       gitCmdConfig
@@ -62,7 +63,6 @@ type Config struct {
 	dryRun        bool
 	force         bool
 	output        string
-	recursive     bool
 	verbose       bool
 	templateFuncs template.FuncMap
 
@@ -145,7 +145,7 @@ func newConfig(options ...configOption) (*Config, error) {
 		Umask:      fileMode(getUmask()),
 		Color:      "auto",
 		Format:     "json",
-		recursive:  true,
+		Recursive:  true,
 		Diff: diffCmdConfig{
 			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll &^ chezmoi.IncludeScripts),
 		},
@@ -229,7 +229,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
-		recursive:           c.recursive,
+		recursive:           c.Recursive,
 		mustBeInSourceState: true,
 	})
 	if err != nil {
@@ -490,6 +490,7 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 	persistentFlags.StringVarP(&c.DestDir, "destination", "D", c.DestDir, "destination directory")
 	persistentFlags.BoolVar(&c.Follow, "follow", c.Follow, "follow symlinks")
 	persistentFlags.StringVar(&c.Format, "format", c.Format, "format ("+serializationFormatNamesStr()+")")
+	persistentFlags.BoolVarP(&c.Recursive, "recursive", "r", c.Recursive, "recursive")
 	persistentFlags.BoolVar(&c.Remove, "remove", c.Remove, "remove targets")
 	persistentFlags.StringVarP(&c.SourceDir, "source", "S", c.SourceDir, "source directory")
 	for _, key := range []string{
@@ -497,6 +498,7 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 		"destination",
 		"follow",
 		"format",
+		"recursive",
 		"remove",
 		"source",
 	} {
@@ -508,7 +510,6 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 	persistentFlags.StringVarP(&c.configFile, "config", "c", c.configFile, "config file")
 	persistentFlags.BoolVarP(&c.dryRun, "dry-run", "n", c.dryRun, "dry run")
 	persistentFlags.BoolVar(&c.force, "force", c.force, "force")
-	persistentFlags.BoolVarP(&c.recursive, "recursive", "r", c.recursive, "recursive")
 	persistentFlags.BoolVarP(&c.verbose, "verbose", "v", c.verbose, "verbose")
 	persistentFlags.StringVarP(&c.output, "output", "o", c.output, "output file")
 	persistentFlags.BoolVar(&c.debug, "debug", c.debug, "write debug logs")
