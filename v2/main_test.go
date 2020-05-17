@@ -46,6 +46,7 @@ func TestChezmoi(t *testing.T) {
 		Dir: filepath.Join("testdata", "scripts"),
 		Cmds: map[string]func(*testscript.TestScript, bool, []string){
 			"chhome":      cmdChHome,
+			"cmpmod":      cmdCmpMod,
 			"edit":        cmdEdit,
 			"mkfile":      cmdMkFile,
 			"mkhomedir":   cmdMkHomeDir,
@@ -88,6 +89,28 @@ func cmdChHome(ts *testscript.TestScript, neg bool, args []string) {
 	ts.Setenv("CHEZMOISOURCEDIR", chezmoiSourceDir)
 	if runtime.GOOS == "windows" {
 		ts.Setenv("USERPROFILE", homeDir)
+	}
+}
+
+// cmdCmpMod compares modes.
+func cmdCmpMod(ts *testscript.TestScript, neg bool, args []string) {
+	if len(args) != 2 {
+		ts.Fatalf("usage: cmpmod mode path")
+	}
+	mode64, err := strconv.ParseUint(args[0], 8, 32)
+	if err != nil || os.FileMode(mode64)&os.ModePerm != os.FileMode(mode64) {
+		ts.Fatalf("invalid mode: %s", args[0])
+	}
+	info, err := os.Stat(args[1])
+	if err != nil {
+		ts.Fatalf("%s: %v", args[1], err)
+	}
+	equal := info.Mode()&os.ModePerm == os.FileMode(mode64)
+	if neg && equal {
+		ts.Fatalf("%s unexpectedly has mode %03o", args[1], info.Mode()&os.ModePerm)
+	}
+	if !neg && !equal {
+		ts.Fatalf("%s has mode %03o, expected %03o", args[1], info.Mode()&os.ModePerm, os.FileMode(mode64))
 	}
 }
 

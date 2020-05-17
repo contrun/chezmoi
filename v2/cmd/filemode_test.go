@@ -50,6 +50,10 @@ func TestPermValue(t *testing.T) {
 			s:           "01000",
 			expectedErr: true,
 		},
+		{
+			s:           "-0",
+			expectedErr: true,
+		},
 	} {
 		t.Run(tc.s, func(t *testing.T) {
 			var p fileMode

@@ -16,11 +16,11 @@ func (p *fileMode) FileMode() os.FileMode {
 
 func (p *fileMode) Set(s string) error {
 	v, err := strconv.ParseUint(s, 8, 32)
-	if os.FileMode(v)&os.ModePerm != os.FileMode(v) {
+	if err != nil || os.FileMode(v)&os.ModePerm != os.FileMode(v) {
 		return fmt.Errorf("%s: invalid mode", s)
 	}
 	*p = fileMode(v)
-	return err
+	return nil
 }
 
 func (p *fileMode) String() string {

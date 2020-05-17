@@ -55,3 +55,5 @@ require (
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 )
+
+replace github.com/go-git/go-git/v5 => github.com/twpayne/go-git/v5 v5.0.1-0.20200517130039-70111361e674
