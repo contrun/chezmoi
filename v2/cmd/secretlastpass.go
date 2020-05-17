@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	"sync"
 	"unicode"
 
 	"github.com/coreos/go-semver/semver"
@@ -33,8 +32,8 @@ var (
 )
 
 type lastpassCmdConfig struct {
-	Command          string
-	versionCheckOnce sync.Once
+	Command   string
+	versionOK bool
 }
 
 var lastPassCache = make(map[string][]map[string]interface{})
@@ -63,11 +62,12 @@ func (c *Config) lastpassOutput(args ...string) ([]byte, error) {
 }
 
 func (c *Config) lastpassRawFunc(id string) []map[string]interface{} {
-	c.Lastpass.versionCheckOnce.Do(func() {
+	if !c.Lastpass.versionOK {
 		if err := c.lastpassVersionCheck(); err != nil {
 			panic(err)
 		}
-	})
+		c.Lastpass.versionOK = true
+	}
 	if data, ok := lastPassCache[id]; ok {
 		return data
 	}
