@@ -50,7 +50,7 @@ linters-settings:
   goimports:
     local-prefixes: github.com/twpayne/chezmoi
 
-    issues:
+issues:
   exclude-rules:
   - linters:
     - dupl
