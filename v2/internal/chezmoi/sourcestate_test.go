@@ -190,7 +190,7 @@ func TestSourceStateApplyAll(t *testing.T) {
 			s := NewSourceState(sourceStateOptions...)
 			require.NoError(t, s.Read())
 			require.NoError(t, s.Evaluate())
-			require.NoError(t, s.ApplyAll(system, vfst.DefaultUmask, "/home/user", NewIncludeBits(IncludeAll)))
+			require.NoError(t, s.ApplyAll(system, "/home/user", NewIncludeBits(IncludeAll)))
 
 			vfst.RunTests(t, fs, "", tc.tests...)
 		})

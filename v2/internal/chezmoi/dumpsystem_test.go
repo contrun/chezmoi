@@ -38,7 +38,7 @@ func TestDumpSystem(t *testing.T) {
 	require.NoError(t, s.Evaluate())
 
 	dumpSystem := NewDumpSystem()
-	require.NoError(t, s.ApplyAll(dumpSystem, vfst.DefaultUmask, "", NewIncludeBits(IncludeAll)))
+	require.NoError(t, s.ApplyAll(dumpSystem, "", NewIncludeBits(IncludeAll)))
 	expectedData := map[string]interface{}{
 		"dir": &dirData{
 			Type: dataTypeDir,

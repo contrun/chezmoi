@@ -24,6 +24,7 @@ type addCmdConfig struct {
 	empty        bool
 	encrypt      bool
 	exact        bool
+	include      *chezmoi.IncludeBits
 	template     bool
 }
 
@@ -55,7 +56,7 @@ func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
 		Encrypt:      c.add.encrypt,
 		Exact:        c.add.exact,
 		Follow:       c.Follow,
+		Include:      c.add.include,
 		Template:     c.add.template,
-		Umask:        c.Umask.FileMode(),
 	})
 }

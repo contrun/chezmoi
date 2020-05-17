@@ -149,9 +149,14 @@ func newConfig(options ...configOption) (*Config, error) {
 		Recursive:  true,
 		Diff: diffCmdConfig{
 			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll &^ chezmoi.IncludeScripts),
+			NoPager: false,
+			Pager:   "",
 		},
 		Git: gitCmdConfig{
-			Command: "git",
+			Command:    "git",
+			AutoAdd:    false,
+			AutoCommit: false,
+			AutoPush:   false,
 		},
 		Template: templateConfig{
 			Options: chezmoi.DefaultTemplateOptions,
@@ -177,6 +182,14 @@ func newConfig(options ...configOption) (*Config, error) {
 		},
 		Vault: vaultCmdConfig{
 			Command: "vault",
+		},
+		add: addCmdConfig{
+			autoTemplate: false,
+			empty:        false,
+			encrypt:      false,
+			exact:        false,
+			include:      chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			template:     false,
 		},
 		apply: applyCmdConfig{
 			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
@@ -226,7 +239,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	if len(args) == 0 {
-		return s.ApplyAll(targetSystem, c.Umask.FileMode(), targetDir, include)
+		return s.ApplyAll(targetSystem, targetDir, include)
 	}
 
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
@@ -238,7 +251,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	for _, targetName := range targetNames {
-		if err := s.ApplyOne(targetSystem, c.Umask.FileMode(), targetDir, targetName, include); err != nil {
+		if err := s.ApplyOne(targetSystem, targetDir, targetName, include); err != nil {
 			return err
 		}
 	}

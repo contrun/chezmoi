@@ -42,21 +42,21 @@ func NewIncludeBits(includeBits IncludeBits) *IncludeBits {
 	return &includeBits
 }
 
-// Include returns true if e should be include.
-func (m *IncludeBits) Include(e TargetStateEntry) bool {
-	switch e.(type) {
+// Include returns true if v should be included.
+func (m *IncludeBits) Include(v interface{}) bool {
+	switch v.(type) {
 	case *TargetStateAbsent:
 		return *m&IncludeAbsent != 0
-	case *TargetStateDir:
+	case *DestStateDir, *SourceStateDir, *TargetStateDir:
 		return *m&IncludeDirs != 0
-	case *TargetStateFile:
+	case *DestStateFile, *SourceStateFile, *TargetStateFile:
 		return *m&IncludeFiles != 0
 	case *TargetStateScript:
 		return *m&IncludeScripts != 0
-	case *TargetStateSymlink:
+	case *DestStateSymlink, *TargetStateSymlink:
 		return *m&IncludeSymlinks != 0
 	default:
-		panic(fmt.Sprintf("%T: unsupported type", e))
+		panic(fmt.Sprintf("%T: unsupported type", v))
 	}
 }
 

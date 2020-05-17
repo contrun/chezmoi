@@ -106,9 +106,9 @@ type AddOptions struct {
 	Empty        bool
 	Encrypt      bool
 	Exact        bool
+	Include      *IncludeBits
 	Follow       bool
 	Template     bool
-	Umask        os.FileMode
 }
 
 // Add adds sourceStateEntry to s.
@@ -128,16 +128,18 @@ func (s *SourceState) Add(system System, destDir string, destPathInfos map[strin
 		if err != nil {
 			return err
 		}
-		targetSourceState.entries[targetName] = sourceStateEntry
+		if sourceStateEntry != nil {
+			targetSourceState.entries[targetName] = sourceStateEntry
+		}
 	}
 	// FIXME include
-	return targetSourceState.ApplyAll(system, options.Umask, s.sourcePath, NewIncludeBits(IncludeAll))
+	return targetSourceState.ApplyAll(system, s.sourcePath, options.Include)
 }
 
 // ApplyAll updates targetDir in fs to match s.
-func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir string, include *IncludeBits) error {
+func (s *SourceState) ApplyAll(system System, targetDir string, include *IncludeBits) error {
 	for _, targetName := range s.sortedTargetNames() {
-		if err := s.ApplyOne(system, umask, targetDir, targetName, include); err != nil {
+		if err := s.ApplyOne(system, targetDir, targetName, include); err != nil {
 			return err
 		}
 	}
@@ -145,7 +147,7 @@ func (s *SourceState) ApplyAll(system System, umask os.FileMode, targetDir strin
 }
 
 // ApplyOne updates targetName in targetDir on fs to match s using s.
-func (s *SourceState) ApplyOne(system System, umask os.FileMode, targetDir, targetName string, include *IncludeBits) error {
+func (s *SourceState) ApplyOne(system System, targetDir, targetName string, include *IncludeBits) error {
 	targetStateEntry, err := s.entries[targetName].TargetStateEntry()
 	if err != nil {
 		return err
@@ -643,6 +645,9 @@ func (s *SourceState) sourceStateEntry(system System, destPath string, info os.F
 	})
 	if err != nil {
 		return nil, err
+	}
+	if !options.Include.Include(destStateEntry) {
+		return nil, nil
 	}
 	// FIXME create parents
 	sourcePath := "" // FIXME
