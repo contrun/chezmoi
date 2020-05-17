@@ -92,9 +92,9 @@ type Config struct {
 	verify          verifyCmdConfig
 
 	scriptStateBucket []byte
-	Stdin             io.Reader
-	Stdout            io.WriteCloser
-	Stderr            io.WriteCloser
+	stdin             io.Reader
+	stdout            io.WriteCloser
+	stderr            io.WriteCloser
 }
 
 // A configOption sets and option on a Config.
@@ -193,9 +193,9 @@ func newConfig(options ...configOption) (*Config, error) {
 			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
 		},
 		scriptStateBucket: []byte("script"),
-		Stdin:             os.Stdin,
-		Stdout:            os.Stdout,
-		Stderr:            os.Stderr,
+		stdin:             os.Stdin,
+		stdout:            os.Stdout,
+		stderr:            os.Stderr,
 	}
 	for _, option := range options {
 		option(c)
@@ -593,7 +593,7 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 		case "auto":
 			if _, ok := os.LookupEnv("NO_COLOR"); ok {
 				c.colored = false
-			} else if stdout, ok := c.Stdout.(*os.File); ok {
+			} else if stdout, ok := c.stdout.(*os.File); ok {
 				c.colored = terminal.IsTerminal(int(stdout.Fd()))
 			} else {
 				c.colored = false
@@ -604,7 +604,7 @@ func (c *Config) persistentPreRunRootE(cmd *cobra.Command, args []string) error 
 	}
 
 	if c.colored {
-		if err := enableVirtualTerminalProcessing(c.Stdout); err != nil {
+		if err := enableVirtualTerminalProcessing(c.stdout); err != nil {
 			return err
 		}
 	}
@@ -670,7 +670,7 @@ func (c *Config) persistentPostRunRootE(cmd *cobra.Command, args []string) error
 
 //nolint:unparam
 func (c *Config) prompt(s, choices string) (byte, error) {
-	r := bufio.NewReader(c.Stdin)
+	r := bufio.NewReader(c.stdin)
 	for {
 		_, err := fmt.Printf("%s [%s]? ", s, strings.Join(strings.Split(choices, ""), ","))
 		if err != nil {
@@ -697,9 +697,9 @@ func (c *Config) run(dir, name string, args []string) error {
 			return err
 		}
 	}
-	cmd.Stdin = c.Stdin
-	cmd.Stdout = c.Stdout
-	cmd.Stderr = c.Stdout
+	cmd.Stdin = c.stdin
+	cmd.Stdout = c.stdout
+	cmd.Stderr = c.stdout
 	// FIXME use c.system
 	return cmd.Run()
 }
@@ -727,7 +727,7 @@ func (c *Config) validateData() error {
 
 func (c *Config) writeOutput(data []byte) error {
 	if c.output == "" || c.output == "-" {
-		_, err := c.Stdout.Write(data)
+		_, err := c.stdout.Write(data)
 		return err
 	}
 	return c.fs.WriteFile(c.output, data, 0o666)

@@ -144,13 +144,13 @@ func withRemove(remove bool) configOption {
 
 func withStdin(stdin io.Reader) configOption {
 	return func(c *Config) {
-		c.Stdin = stdin
+		c.stdin = stdin
 	}
 }
 
 func withStdout(stdout io.WriteCloser) configOption {
 	return func(c *Config) {
-		c.Stdout = stdout
+		c.stdout = stdout
 	}
 }
 

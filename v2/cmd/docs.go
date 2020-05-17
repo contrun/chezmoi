@@ -63,7 +63,7 @@ func (c *Config) runDocsCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	width := 80
-	if stdout, ok := c.Stdout.(*os.File); ok && terminal.IsTerminal(int(stdout.Fd())) {
+	if stdout, ok := c.stdout.(*os.File); ok && terminal.IsTerminal(int(stdout.Fd())) {
 		width, _, err = terminal.GetSize(int(stdout.Fd()))
 		if err != nil {
 			return err

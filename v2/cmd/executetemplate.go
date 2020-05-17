@@ -46,7 +46,7 @@ func (c *Config) runExecuteTemplateCmd(cmd *cobra.Command, args []string) error 
 	output := &strings.Builder{}
 	switch len(args) {
 	case 0:
-		data, err := ioutil.ReadAll(c.Stdin)
+		data, err := ioutil.ReadAll(c.stdin)
 		if err != nil {
 			return err
 		}

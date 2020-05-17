@@ -138,7 +138,7 @@ func (c *Config) runKeepassxcCLICommand(name string, args []string) ([]byte, err
 	}
 	cmd := exec.Command(name, args...)
 	cmd.Stdin = bytes.NewBufferString(keepassxcPassword + "\n")
-	cmd.Stderr = c.Stderr
+	cmd.Stderr = c.stderr
 	return c.system.IdempotentCmdOutput(cmd)
 }
 
