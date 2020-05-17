@@ -2,8 +2,6 @@ mkhomedir golden
 mkhomedir
 mksourcedir
 
-# FIXME add chezmoi diff --color test (requires care with line endings)
-
 # test that chezmoi diff generates no output when the source and destination states are equal
 chezmoi diff
 ! stdout .
@@ -18,6 +16,8 @@ rm ${CHEZMOISOURCEDIR}/dot_inputrc
 edit $HOME/.bashrc
 chezmoi diff
 cmp stdout golden/modify-file-diff
+chezmoi diff --color=on
+cmp stdout golden/modify-file-diff-color
 cp golden/.bashrc $HOME
 
 # test that chezmoi diff generates a diff when a file is removed from the destination directory
@@ -68,6 +68,14 @@ index e9a9fc3629d099c17bce71f43c2b5c773ed3ba45..13faef3591002a9d38fe869ca0e205ca
 @@ -1,2 +1 @@
  # contents of .bashrc
 -# edited
+-- golden/modify-file-diff-color --
+[1mdiff --git a/.bashrc b/.bashrc
+index e9a9fc3629d099c17bce71f43c2b5c773ed3ba45..13faef3591002a9d38fe869ca0e205ca472fac73 100644
+--- a/.bashrc
++++ b/.bashrc[m
+[36m@@ -1,2 +1 @@[m
+ # contents of .bashrc
+[31m-# edited[m
 -- golden/remove-file-diff --
 diff --git a/.bashrc b/.bashrc
 old mode 0
