@@ -118,12 +118,6 @@ func withDestDir(destDir string) configOption {
 	}
 }
 
-func withFollow(follow bool) configOption {
-	return func(c *Config) {
-		c.Follow = follow
-	}
-}
-
 func withGenericSecretCmdConfig(genericSecretCmdConfig genericSecretCmdConfig) configOption {
 	return func(c *Config) {
 		c.GenericSecret = genericSecretCmdConfig

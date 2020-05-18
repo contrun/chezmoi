@@ -107,7 +107,6 @@ type AddOptions struct {
 	Encrypt      bool
 	Exact        bool
 	Include      *IncludeBits
-	Follow       bool
 	Template     bool
 }
 
@@ -158,7 +157,7 @@ func (s *SourceState) ApplyOne(system System, targetDir, targetName string, incl
 	}
 
 	targetPath := path.Join(targetDir, targetName)
-	destStateEntry, err := NewDestStateEntry(system, targetPath, nil)
+	destStateEntry, err := NewDestStateEntry(system, targetPath)
 	if err != nil {
 		return err
 	}
@@ -640,9 +639,7 @@ func (s *SourceState) sortedTargetNames() []string {
 }
 
 func (s *SourceState) sourceStateEntry(system System, destPath string, info os.FileInfo, options *AddOptions) (SourceStateEntry, error) {
-	destStateEntry, err := NewDestStateEntry(system, destPath, &NewDestStateEntryOptions{
-		Follow: options.Follow,
-	})
+	destStateEntry, err := NewDestStateEntry(system, destPath)
 	if err != nil {
 		return nil, err
 	}

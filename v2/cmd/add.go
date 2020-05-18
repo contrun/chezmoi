@@ -55,7 +55,6 @@ func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
 		Empty:        c.add.empty,
 		Encrypt:      c.add.encrypt,
 		Exact:        c.add.exact,
-		Follow:       c.Follow,
 		Include:      c.add.include,
 		Template:     c.add.template,
 	})

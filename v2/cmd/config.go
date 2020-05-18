@@ -51,7 +51,6 @@ type Config struct {
 	DestDir   string
 	Umask     fileMode
 	Format    string
-	Follow    bool
 	Recursive bool
 	Remove    bool
 	Color     string
@@ -406,12 +405,7 @@ func (c *Config) getDestPathInfos(args []string) (map[string]os.FileInfo, error)
 				return nil, err
 			}
 		} else {
-			var info os.FileInfo
-			if c.Follow {
-				info, err = c.fs.Stat(destPath)
-			} else {
-				info, err = c.fs.Lstat(destPath)
-			}
+			info, err := c.fs.Lstat(destPath)
 			if err != nil {
 				return nil, err
 			}
@@ -541,7 +535,6 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 
 	persistentFlags.StringVar(&c.Color, "color", c.Color, "colorize diffs")
 	persistentFlags.StringVarP(&c.DestDir, "destination", "D", c.DestDir, "destination directory")
-	persistentFlags.BoolVar(&c.Follow, "follow", c.Follow, "follow symlinks")
 	persistentFlags.StringVar(&c.Format, "format", c.Format, "format ("+serializationFormatNamesStr()+")")
 	persistentFlags.BoolVarP(&c.Recursive, "recursive", "r", c.Recursive, "recursive")
 	persistentFlags.BoolVar(&c.Remove, "remove", c.Remove, "remove targets")
@@ -549,7 +542,6 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 	for _, key := range []string{
 		"color",
 		"destination",
-		"follow",
 		"format",
 		"recursive",
 		"remove",
