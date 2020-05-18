@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/twpayne/go-xdg/v3"
 
-	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
+	"github.com/twpayne/chezmoi/next/internal/chezmoi"
 )
 
 func getDefaultConfigFile(bds *xdg.BaseDirectorySpecification) string {

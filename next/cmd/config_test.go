@@ -10,7 +10,7 @@ import (
 	vfs "github.com/twpayne/go-vfs"
 	xdg "github.com/twpayne/go-xdg/v3"
 
-	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
+	"github.com/twpayne/chezmoi/next/internal/chezmoi"
 )
 
 func TestAddTemplateFuncPanic(t *testing.T) {

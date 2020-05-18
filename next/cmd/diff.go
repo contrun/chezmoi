@@ -6,7 +6,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/spf13/cobra"
 
-	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
+	"github.com/twpayne/chezmoi/next/internal/chezmoi"
 )
 
 var diffCmd = &cobra.Command{
@@ -18,9 +18,10 @@ var diffCmd = &cobra.Command{
 }
 
 type diffCmdConfig struct {
-	include *chezmoi.IncludeBits
-	NoPager bool
-	Pager   string
+	include   *chezmoi.IncludeBits
+	recursive bool
+	NoPager   bool
+	Pager     string
 }
 
 func init() {
@@ -29,6 +30,7 @@ func init() {
 	persistentFlags := diffCmd.PersistentFlags()
 	persistentFlags.VarP(config.Diff.include, "include", "i", "include entry types")
 	persistentFlags.BoolVar(&config.Diff.NoPager, "no-pager", config.Diff.NoPager, "disable pager")
+	persistentFlags.BoolVarP(&config.Diff.recursive, "recursive", "r", config.Diff.recursive, "recursive")
 
 	markRemainingZshCompPositionalArgumentsAsFiles(diffCmd, 1)
 }
@@ -40,7 +42,7 @@ func (c *Config) runDiffCmd(cmd *cobra.Command, args []string) error {
 		unifiedEncoder.SetColor(diff.NewColorConfig())
 	}
 	gitDiffSystem := chezmoi.NewGitDiffSystem(unifiedEncoder, c.system, c.DestDir+chezmoi.PathSeparatorStr)
-	if err := c.applyArgs(gitDiffSystem, c.DestDir, args, c.Diff.include); err != nil {
+	if err := c.applyArgs(gitDiffSystem, c.DestDir, args, c.Diff.include, c.Diff.recursive); err != nil {
 		return err
 	}
 	return c.writeOutputString(sb.String())

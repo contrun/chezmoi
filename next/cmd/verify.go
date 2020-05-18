@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
+	"github.com/twpayne/chezmoi/next/internal/chezmoi"
 )
 
 var verifyCmd = &cobra.Command{
@@ -18,7 +18,8 @@ var verifyCmd = &cobra.Command{
 }
 
 type verifyCmdConfig struct {
-	include *chezmoi.IncludeBits
+	include   *chezmoi.IncludeBits
+	recursive bool
 }
 
 func init() {
@@ -26,13 +27,14 @@ func init() {
 
 	persistentFlags := verifyCmd.PersistentFlags()
 	persistentFlags.VarP(config.verify.include, "include", "i", "include entry types")
+	persistentFlags.BoolVarP(&config.verify.recursive, "recursive", "r", config.verify.recursive, "recursive")
 
 	markRemainingZshCompPositionalArgumentsAsFiles(verifyCmd, 1)
 }
 
 func (c *Config) runVerifyCmd(cmd *cobra.Command, args []string) error {
 	canarySystem := chezmoi.NewCanarySystem(chezmoi.NewNullSystem())
-	if err := c.applyArgs(canarySystem, "", args, c.verify.include); err != nil {
+	if err := c.applyArgs(canarySystem, "", args, c.verify.include, c.verify.recursive); err != nil {
 		return err
 	}
 	if canarySystem.Mutated() {

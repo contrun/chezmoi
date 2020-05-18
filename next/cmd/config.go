@@ -25,8 +25,8 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
-	"github.com/twpayne/chezmoi/v2/internal/git"
+	"github.com/twpayne/chezmoi/next/internal/chezmoi"
+	"github.com/twpayne/chezmoi/next/internal/git"
 )
 
 type templateConfig struct {
@@ -539,7 +539,6 @@ func (c *Config) init(rootCmd *cobra.Command) error {
 	persistentFlags.StringVar(&c.Color, "color", c.Color, "colorize diffs")
 	persistentFlags.StringVarP(&c.DestDir, "destination", "D", c.DestDir, "destination directory")
 	persistentFlags.StringVar(&c.Format, "format", c.Format, "format ("+serializationFormatNamesStr()+")")
-	persistentFlags.BoolVarP(&c.Recursive, "recursive", "r", c.Recursive, "recursive")
 	persistentFlags.BoolVar(&c.Remove, "remove", c.Remove, "remove targets")
 	persistentFlags.StringVarP(&c.SourceDir, "source", "S", c.SourceDir, "source directory")
 	for _, key := range []string{

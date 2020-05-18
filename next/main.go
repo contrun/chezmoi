@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/twpayne/chezmoi/v2/cmd"
+	"github.com/twpayne/chezmoi/next/cmd"
 )
 
 var (
