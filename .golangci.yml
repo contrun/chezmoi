@@ -75,4 +75,4 @@ issues:
     - unparam
     - unused
     - varcheck
-    path: v2/
+    path: next/

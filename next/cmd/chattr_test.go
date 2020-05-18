@@ -40,7 +40,8 @@ func TestParseAttributesModifier(t *testing.T) {
 		{
 			s: "e",
 			expected: &attributesModifier{
-				empty: boolModifierSet},
+				empty: boolModifierSet,
+			},
 		},
 		{
 			s: "encrypted",
