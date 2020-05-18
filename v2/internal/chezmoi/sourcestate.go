@@ -519,7 +519,7 @@ func (s *SourceState) executeTemplate(path string) ([]byte, error) {
 	return s.ExecuteTemplateData(path, data)
 }
 
-func (s *SourceState) newSourceStateDir(sourcePath string, da dirAttributes) *SourceStateDir {
+func (s *SourceState) newSourceStateDir(sourcePath string, da DirAttributes) *SourceStateDir {
 	perm := os.FileMode(0o777)
 	if da.Private {
 		perm &^= 0o77
@@ -533,12 +533,12 @@ func (s *SourceState) newSourceStateDir(sourcePath string, da dirAttributes) *So
 
 	return &SourceStateDir{
 		path:             sourcePath,
-		attributes:       da,
+		Attributes:       da,
 		targetStateEntry: targetStateDir,
 	}
 }
 
-func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *SourceStateFile {
+func (s *SourceState) newSourceStateFile(sourcePath string, fa FileAttributes) *SourceStateFile {
 	lazyContents := &lazyContents{
 		contentsFunc: func() ([]byte, error) {
 			contents, err := s.system.ReadFile(sourcePath)
@@ -555,7 +555,7 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *
 
 	var targetStateEntryFunc func() (TargetStateEntry, error)
 	switch fa.Type {
-	case sourceFileTypeFile:
+	case SourceFileTypeFile:
 		targetStateEntryFunc = func() (TargetStateEntry, error) {
 			contents, err := lazyContents.Contents()
 			if err != nil {
@@ -583,7 +583,7 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *
 				perm:         perm,
 			}, nil
 		}
-	case sourceFileTypeScript:
+	case SourceFileTypeScript:
 		targetStateEntryFunc = func() (TargetStateEntry, error) {
 			contents, err := lazyContents.Contents()
 			if err != nil {
@@ -601,7 +601,7 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *
 				once:         fa.Once,
 			}, nil
 		}
-	case sourceFileTypeSymlink:
+	case SourceFileTypeSymlink:
 		targetStateEntryFunc = func() (TargetStateEntry, error) {
 			linknameBytes, err := lazyContents.Contents()
 			if err != nil {
@@ -624,7 +624,7 @@ func (s *SourceState) newSourceStateFile(sourcePath string, fa fileAttributes) *
 	return &SourceStateFile{
 		lazyContents:         lazyContents,
 		path:                 sourcePath,
-		attributes:           fa,
+		Attributes:           fa,
 		targetStateEntryFunc: targetStateEntryFunc,
 	}
 }
@@ -657,7 +657,7 @@ func (s *SourceState) sourceStateEntry(system System, destPath string, info os.F
 	case *DestStateDir:
 		return &SourceStateDir{
 			path: sourcePath,
-			attributes: dirAttributes{
+			Attributes: DirAttributes{
 				Name:    info.Name(),
 				Exact:   options.Exact,
 				Private: POSIXFileModes && info.Mode()&os.ModePerm&0o77 == 0,
@@ -673,9 +673,9 @@ func (s *SourceState) sourceStateEntry(system System, destPath string, info os.F
 		}
 		return &SourceStateFile{
 			path: sourcePath,
-			attributes: fileAttributes{
+			Attributes: FileAttributes{
 				Name:       info.Name(),
-				Type:       sourceFileTypeFile,
+				Type:       SourceFileTypeFile,
 				Empty:      options.Empty,
 				Encrypted:  options.Encrypt,
 				Executable: POSIXFileModes && info.Mode()&os.ModePerm&0o111 != 0,
@@ -697,9 +697,9 @@ func (s *SourceState) sourceStateEntry(system System, destPath string, info os.F
 		}
 		return &SourceStateFile{
 			path: sourcePath, // FIXME
-			attributes: fileAttributes{
+			Attributes: FileAttributes{
 				Name:     info.Name(),
-				Type:     sourceFileTypeSymlink,
+				Type:     SourceFileTypeSymlink,
 				Template: options.Template || options.AutoTemplate,
 			},
 			lazyContents: &lazyContents{

@@ -10,6 +10,7 @@ General:
 - --output now global
 - diff includes scripts
 - archive includes scripts
+- encrypt -> encrypted in chattr
 
 Config file:
 - rename sourceVCS to git

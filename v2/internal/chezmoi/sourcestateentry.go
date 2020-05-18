@@ -14,16 +14,16 @@ type SourceStateEntry interface {
 
 // A SourceStateDir represents the state of a directory in the source state.
 type SourceStateDir struct {
+	Attributes       DirAttributes
 	path             string
-	attributes       dirAttributes
 	targetStateEntry TargetStateEntry
 }
 
 // A SourceStateFile represents the state of a file in the source state.
 type SourceStateFile struct {
 	*lazyContents
+	Attributes           FileAttributes
 	path                 string
-	attributes           fileAttributes
 	targetStateEntryFunc func() (TargetStateEntry, error)
 	targetStateEntry     TargetStateEntry
 	targetStateEntryErr  error

@@ -1,21 +1,31 @@
-[v2] stop # FIXME
-
 mksourcedir
 
-chezmoi chattr +empty $HOME${/}.bashrc
-exists ${CHEZMOISOURCEDIR}/empty_dot_bashrc
+chezmoi chattr empty $HOME${/}.bashrc
+exists $CHEZMOISOURCEDIR/empty_dot_bashrc
+exec ls $CHEZMOISOURCEDIR
+stdout -count=1 bashrc
 
-chezmoi chattr +template $HOME${/}.bashrc
-exists ${CHEZMOISOURCEDIR}/empty_dot_bashrc.tmpl
+chezmoi chattr +p $HOME${/}.bashrc
+exists $CHEZMOISOURCEDIR/private_empty_dot_bashrc
+exec ls $CHEZMOISOURCEDIR
+stdout -count=1 bashrc
 
-chezmoi chattr +private $HOME${/}.bashrc
-exists ${CHEZMOISOURCEDIR}/private_empty_dot_bashrc.tmpl
+chezmoi chattr t,-e $HOME${/}.bashrc
+exists $CHEZMOISOURCEDIR/private_dot_bashrc.tmpl
+exec ls $CHEZMOISOURCEDIR
+stdout -count=1 bashrc
 
-chezmoi chattr noempty $HOME${/}.bashrc
-exists ${CHEZMOISOURCEDIR}/private_dot_bashrc.tmpl
+chezmoi chattr nox $HOME${/}.binary
+exists $CHEZMOISOURCEDIR/dot_binary
+exec ls $CHEZMOISOURCEDIR
+stdout -count=1 binary
 
-chezmoi chattr -- -template $HOME${/}.bashrc
-exists ${CHEZMOISOURCEDIR}/private_dot_bashrc
+chezmoi chattr x $HOME${/}.binary
+exists $CHEZMOISOURCEDIR/executable_dot_binary
+exec ls $CHEZMOISOURCEDIR
+stdout -count=1 binary
 
-chezmoi chattr nop $HOME${/}.bashrc
-exists ${CHEZMOISOURCEDIR}/dot_bashrc
+chezmoi chattr exact $HOME/.ssh
+exists $CHEZMOISOURCEDIR/exact_private_dot_ssh
+exec ls $CHEZMOISOURCEDIR
+stdout -count=1 ssh

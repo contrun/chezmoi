@@ -31,7 +31,7 @@ func TestDirAttributes(t *testing.T) {
 		Exact:   []bool{false, true},
 		Private: []bool{false, true},
 	}
-	var das []dirAttributes
+	var das []DirAttributes
 	require.NoError(t, combinator.Generate(&das, testData))
 	for _, da := range das {
 		actualSourceName := da.SourceName()
@@ -44,9 +44,9 @@ func TestDirAttributes(t *testing.T) {
 // TestFileAttributes tests fileAttributes by round-tripping between file names
 // and fileAttributes.
 func TestFileAttributes(t *testing.T) {
-	var fas []fileAttributes
+	var fas []FileAttributes
 	require.NoError(t, combinator.Generate(&fas, struct {
-		Type       sourceFileTargetType
+		Type       SourceFileTargetType
 		Name       []string
 		Empty      []bool
 		Encrypted  []bool
@@ -54,7 +54,7 @@ func TestFileAttributes(t *testing.T) {
 		Private    []bool
 		Template   []bool
 	}{
-		Type: sourceFileTypeFile,
+		Type: SourceFileTypeFile,
 		Name: []string{
 			".name",
 			"exact_name",
@@ -67,11 +67,11 @@ func TestFileAttributes(t *testing.T) {
 		Template:   []bool{false, true},
 	}))
 	require.NoError(t, combinator.Generate(&fas, struct {
-		Type sourceFileTargetType
+		Type SourceFileTargetType
 		Name []string
 		Once []bool
 	}{
-		Type: sourceFileTypeScript,
+		Type: SourceFileTypeScript,
 		Name: []string{
 			"exact_name",
 			"name",
@@ -79,11 +79,11 @@ func TestFileAttributes(t *testing.T) {
 		Once: []bool{false, true},
 	}))
 	require.NoError(t, combinator.Generate(&fas, struct {
-		Type sourceFileTargetType
+		Type SourceFileTargetType
 		Name []string
 		Once []bool
 	}{
-		Type: sourceFileTypeSymlink,
+		Type: SourceFileTypeSymlink,
 		Name: []string{
 			"exact_name",
 			"name",

@@ -4,29 +4,29 @@ import (
 	"strings"
 )
 
-// A sourceFileTargetType is a the type of a target represented by a file in the
+// A SourceFileTargetType is a the type of a target represented by a file in the
 // source state. A file in the source state can represent a file, script, or
 // symlink in the target state.
-type sourceFileTargetType int
+type SourceFileTargetType int
 
 // Source file types.
 const (
-	sourceFileTypeFile sourceFileTargetType = iota
-	sourceFileTypeScript
-	sourceFileTypeSymlink
+	SourceFileTypeFile SourceFileTargetType = iota
+	SourceFileTypeScript
+	SourceFileTypeSymlink
 )
 
-// dirAttributes holds attributes parsed from a source directory name.
-type dirAttributes struct {
+// DirAttributes holds attributes parsed from a source directory name.
+type DirAttributes struct {
 	Name    string
 	Exact   bool
 	Private bool
 }
 
-// A fileAttributes holds attributes parsed from a source file name.
-type fileAttributes struct {
+// A FileAttributes holds attributes parsed from a source file name.
+type FileAttributes struct {
 	Name       string
-	Type       sourceFileTargetType
+	Type       SourceFileTargetType
 	Empty      bool
 	Encrypted  bool
 	Executable bool
@@ -36,7 +36,7 @@ type fileAttributes struct {
 }
 
 // parseDirAttributes parses a single directory name in the source state.
-func parseDirAttributes(sourceName string) dirAttributes {
+func parseDirAttributes(sourceName string) DirAttributes {
 	var (
 		name    = sourceName
 		exact   = false
@@ -53,7 +53,7 @@ func parseDirAttributes(sourceName string) dirAttributes {
 	if strings.HasPrefix(name, dotPrefix) {
 		name = "." + strings.TrimPrefix(name, dotPrefix)
 	}
-	return dirAttributes{
+	return DirAttributes{
 		Name:    name,
 		Exact:   exact,
 		Private: private,
@@ -61,7 +61,7 @@ func parseDirAttributes(sourceName string) dirAttributes {
 }
 
 // SourceName returns da's source name.
-func (da dirAttributes) SourceName() string {
+func (da DirAttributes) SourceName() string {
 	sourceName := ""
 	if da.Exact {
 		sourceName += exactPrefix
@@ -78,10 +78,10 @@ func (da dirAttributes) SourceName() string {
 }
 
 // parseFileAttributes parses a source file name in the source state.
-func parseFileAttributes(sourceName string) fileAttributes {
+func parseFileAttributes(sourceName string) FileAttributes {
 	var (
 		name       = sourceName
-		typ        = sourceFileTypeFile
+		typ        = SourceFileTypeFile
 		empty      = false
 		encrypted  = false
 		executable = false
@@ -92,14 +92,14 @@ func parseFileAttributes(sourceName string) fileAttributes {
 	switch {
 	case strings.HasPrefix(name, runPrefix):
 		name = strings.TrimPrefix(name, runPrefix)
-		typ = sourceFileTypeScript
+		typ = SourceFileTypeScript
 		if strings.HasPrefix(name, oncePrefix) {
 			name = strings.TrimPrefix(name, oncePrefix)
 			once = true
 		}
 	case strings.HasPrefix(name, symlinkPrefix):
 		name = strings.TrimPrefix(name, symlinkPrefix)
-		typ = sourceFileTypeSymlink
+		typ = SourceFileTypeSymlink
 		if strings.HasPrefix(name, dotPrefix) {
 			name = "." + strings.TrimPrefix(name, dotPrefix)
 		}
@@ -128,7 +128,7 @@ func parseFileAttributes(sourceName string) fileAttributes {
 		name = strings.TrimSuffix(name, templateSuffix)
 		template = true
 	}
-	return fileAttributes{
+	return FileAttributes{
 		Name:       name,
 		Type:       typ,
 		Empty:      empty,
@@ -141,10 +141,10 @@ func parseFileAttributes(sourceName string) fileAttributes {
 }
 
 // SourceName returns fa's source name.
-func (fa fileAttributes) SourceName() string {
+func (fa FileAttributes) SourceName() string {
 	sourceName := ""
 	switch fa.Type {
-	case sourceFileTypeFile:
+	case SourceFileTypeFile:
 		if fa.Encrypted {
 			sourceName += encryptedPrefix
 		}
@@ -157,12 +157,12 @@ func (fa fileAttributes) SourceName() string {
 		if fa.Executable {
 			sourceName += executablePrefix
 		}
-	case sourceFileTypeScript:
+	case SourceFileTypeScript:
 		sourceName = runPrefix
 		if fa.Once {
 			sourceName += oncePrefix
 		}
-	case sourceFileTypeSymlink:
+	case SourceFileTypeSymlink:
 		sourceName = symlinkPrefix
 	}
 	if strings.HasPrefix(fa.Name, ".") {

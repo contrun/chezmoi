@@ -226,7 +226,7 @@ func TestSourceStateRead(t *testing.T) {
 				withEntries(map[string]SourceStateEntry{
 					"foo": &SourceStateDir{
 						path: "/home/user/.local/share/chezmoi/foo",
-						attributes: dirAttributes{
+						Attributes: DirAttributes{
 							Name: "foo",
 						},
 						targetStateEntry: &TargetStateDir{
@@ -248,9 +248,9 @@ func TestSourceStateRead(t *testing.T) {
 				withEntries(map[string]SourceStateEntry{
 					"foo": &SourceStateFile{
 						path: "/home/user/.local/share/chezmoi/foo",
-						attributes: fileAttributes{
+						Attributes: FileAttributes{
 							Name: "foo",
-							Type: sourceFileTypeFile,
+							Type: SourceFileTypeFile,
 						},
 						lazyContents: newLazyContents([]byte("bar")),
 						targetStateEntry: &TargetStateFile{
@@ -302,9 +302,9 @@ func TestSourceStateRead(t *testing.T) {
 				withEntries(map[string]SourceStateEntry{
 					"foo": &SourceStateFile{
 						path: "/home/user/.local/share/chezmoi/run_foo",
-						attributes: fileAttributes{
+						Attributes: FileAttributes{
 							Name: "foo",
-							Type: sourceFileTypeScript,
+							Type: SourceFileTypeScript,
 						},
 						lazyContents: newLazyContents([]byte("bar")),
 						targetStateEntry: &TargetStateScript{
@@ -327,9 +327,9 @@ func TestSourceStateRead(t *testing.T) {
 				withEntries(map[string]SourceStateEntry{
 					"foo": &SourceStateFile{
 						path: "/home/user/.local/share/chezmoi/symlink_foo",
-						attributes: fileAttributes{
+						Attributes: FileAttributes{
 							Name: "foo",
-							Type: sourceFileTypeSymlink,
+							Type: SourceFileTypeSymlink,
 						},
 						lazyContents: newLazyContents([]byte("bar")),
 						targetStateEntry: &TargetStateSymlink{
@@ -353,7 +353,7 @@ func TestSourceStateRead(t *testing.T) {
 				withEntries(map[string]SourceStateEntry{
 					"foo": &SourceStateDir{
 						path: "/home/user/.local/share/chezmoi/foo",
-						attributes: dirAttributes{
+						Attributes: DirAttributes{
 							Name: "foo",
 						},
 						targetStateEntry: &TargetStateDir{
@@ -362,9 +362,9 @@ func TestSourceStateRead(t *testing.T) {
 					},
 					"foo/bar": &SourceStateFile{
 						path: "/home/user/.local/share/chezmoi/foo/bar",
-						attributes: fileAttributes{
+						Attributes: FileAttributes{
 							Name: "bar",
-							Type: sourceFileTypeFile,
+							Type: SourceFileTypeFile,
 						},
 						lazyContents: &lazyContents{
 							contents: []byte("baz"),
@@ -479,7 +479,7 @@ func TestSourceStateRead(t *testing.T) {
 				withEntries(map[string]SourceStateEntry{
 					"foo": &SourceStateDir{
 						path: "/home/user/.local/share/chezmoi/foo",
-						attributes: dirAttributes{
+						Attributes: DirAttributes{
 							Name: "foo",
 						},
 						targetStateEntry: &TargetStateDir{
