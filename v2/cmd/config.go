@@ -25,8 +25,8 @@ import (
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/twpayne/chezmoi/internal/git"
 	"github.com/twpayne/chezmoi/v2/internal/chezmoi"
+	"github.com/twpayne/chezmoi/v2/internal/git"
 )
 
 type templateConfig struct {
@@ -51,7 +51,6 @@ type Config struct {
 	DestDir   string
 	Umask     fileMode
 	Format    string
-	Recursive bool
 	Remove    bool
 	Color     string
 	Data      map[string]interface{}
@@ -145,7 +144,6 @@ func newConfig(options ...configOption) (*Config, error) {
 		Umask:      fileMode(getUmask()),
 		Color:      "auto",
 		Format:     "json",
-		Recursive:  true,
 		Diff: diffCmdConfig{
 			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll &^ chezmoi.IncludeScripts),
 			NoPager: false,
@@ -188,22 +186,27 @@ func newConfig(options ...configOption) (*Config, error) {
 			encrypt:      false,
 			exact:        false,
 			include:      chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			recursive:    true,
 			template:     false,
 		},
 		apply: applyCmdConfig{
-			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			include:   chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			recursive: true,
 		},
 		archive: archiveCmdConfig{
-			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			include:   chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			recursive: true,
 		},
 		dump: dumpCmdConfig{
-			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			include:   chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			recursive: true,
 		},
 		managed: managedCmdConfig{
 			include: chezmoi.NewIncludeBits(chezmoi.IncludeDirs | chezmoi.IncludeFiles | chezmoi.IncludeSymlinks),
 		},
 		verify: verifyCmdConfig{
-			include: chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			include:   chezmoi.NewIncludeBits(chezmoi.IncludeAll),
+			recursive: true,
 		},
 		scriptStateBucket: []byte("script"),
 		stdin:             os.Stdin,
@@ -231,7 +234,7 @@ func (c *Config) addTemplateFunc(key string, value interface{}) {
 	c.templateFuncs[key] = value
 }
 
-func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args []string, include *chezmoi.IncludeBits) error {
+func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args []string, include *chezmoi.IncludeBits, recursive bool) error {
 	s, err := c.getSourceState()
 	if err != nil {
 		return err
@@ -242,7 +245,7 @@ func (c *Config) applyArgs(targetSystem chezmoi.System, targetDir string, args [
 	}
 
 	targetNames, err := c.getTargetNames(s, args, getTargetNamesOptions{
-		recursive:           c.Recursive,
+		recursive:           recursive,
 		mustBeInSourceState: true,
 	})
 	if err != nil {
@@ -381,7 +384,7 @@ func (c *Config) getDestPath(arg string) (string, error) {
 	return arg, nil
 }
 
-func (c *Config) getDestPathInfos(args []string) (map[string]os.FileInfo, error) {
+func (c *Config) getDestPathInfos(args []string, recursive bool) (map[string]os.FileInfo, error) {
 	destPathInfos := make(map[string]os.FileInfo)
 	for _, arg := range args {
 		destPath, err := c.getDestPath(arg)
@@ -391,7 +394,7 @@ func (c *Config) getDestPathInfos(args []string) (map[string]os.FileInfo, error)
 		if _, ok := destPathInfos[destPath]; ok {
 			continue
 		}
-		if c.Recursive {
+		if recursive {
 			if err := vfs.WalkSlash(c.fs, destPath, func(destPath string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err

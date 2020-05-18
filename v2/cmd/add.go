@@ -25,6 +25,7 @@ type addCmdConfig struct {
 	encrypt      bool
 	exact        bool
 	include      *chezmoi.IncludeBits
+	recursive    bool
 	template     bool
 }
 
@@ -36,11 +37,12 @@ func init() {
 	persistentFlags.BoolVarP(&config.add.empty, "empty", "e", config.add.empty, "add empty files")
 	persistentFlags.BoolVar(&config.add.encrypt, "encrypt", config.add.encrypt, "encrypt files")
 	persistentFlags.BoolVarP(&config.add.exact, "exact", "x", config.add.exact, "add directories exactly")
-	persistentFlags.BoolVarP(&config.add.template, "template", "T", config.add.template, "add files as templates2")
+	persistentFlags.BoolVarP(&config.add.recursive, "recursive", "r", config.add.recursive, "recursive")
+	persistentFlags.BoolVarP(&config.add.template, "template", "T", config.add.template, "add files as templates")
 }
 
 func (c *Config) runAddCmd(cmd *cobra.Command, args []string) error {
-	destPathInfos, err := c.getDestPathInfos(args)
+	destPathInfos, err := c.getDestPathInfos(args, c.add.recursive)
 	if err != nil {
 		return err
 	}

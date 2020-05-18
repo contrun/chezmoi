@@ -18,7 +18,8 @@ var applyCmd = &cobra.Command{
 }
 
 type applyCmdConfig struct {
-	include *chezmoi.IncludeBits
+	include   *chezmoi.IncludeBits
+	recursive bool
 }
 
 func init() {
@@ -26,10 +27,11 @@ func init() {
 
 	persistentFlags := applyCmd.PersistentFlags()
 	persistentFlags.VarP(config.apply.include, "include", "i", "include entry types")
+	persistentFlags.BoolVarP(&config.apply.recursive, "recursive", "r", config.apply.recursive, "recursive")
 
 	markRemainingZshCompPositionalArgumentsAsFiles(applyCmd, 1)
 }
 
 func (c *Config) runApplyCmd(cmd *cobra.Command, args []string) error {
-	return c.applyArgs(c.system, c.DestDir, args, c.apply.include)
+	return c.applyArgs(c.system, c.DestDir, args, c.apply.include, c.apply.recursive)
 }

@@ -24,7 +24,8 @@ var archiveCmd = &cobra.Command{
 }
 
 type archiveCmdConfig struct {
-	include *chezmoi.IncludeBits
+	include   *chezmoi.IncludeBits
+	recursive bool
 }
 
 func init() {
@@ -32,12 +33,13 @@ func init() {
 
 	persistentFlags := archiveCmd.PersistentFlags()
 	persistentFlags.VarP(config.archive.include, "include", "i", "include entry types")
+	persistentFlags.BoolVarP(&config.archive.recursive, "recursive", "r", config.archive.recursive, "recursive")
 }
 
 func (c *Config) runArchiveCmd(cmd *cobra.Command, args []string) error {
 	sb := &strings.Builder{}
 	tarSystem := chezmoi.NewTARSystem(sb, tarHeaderTemplate())
-	if err := c.applyArgs(tarSystem, "", args, c.archive.include); err != nil {
+	if err := c.applyArgs(tarSystem, "", args, c.archive.include, c.archive.recursive); err != nil {
 		return err
 	}
 	if err := tarSystem.Close(); err != nil {

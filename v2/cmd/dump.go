@@ -15,7 +15,8 @@ var dumpCmd = &cobra.Command{
 }
 
 type dumpCmdConfig struct {
-	include *chezmoi.IncludeBits
+	include   *chezmoi.IncludeBits
+	recursive bool
 }
 
 func init() {
@@ -23,13 +24,14 @@ func init() {
 
 	persistentFlags := dumpCmd.PersistentFlags()
 	persistentFlags.VarP(config.dump.include, "include", "i", "include entry types")
+	persistentFlags.BoolVarP(&config.dump.recursive, "recursive", "r", config.dump.recursive, "recursive")
 
 	markRemainingZshCompPositionalArgumentsAsFiles(dumpCmd, 1)
 }
 
 func (c *Config) runDumpCmd(cmd *cobra.Command, args []string) error {
 	dumpSystem := chezmoi.NewDumpSystem()
-	if err := c.applyArgs(dumpSystem, "", args, c.dump.include); err != nil {
+	if err := c.applyArgs(dumpSystem, "", args, c.dump.include, c.dump.recursive); err != nil {
 		return err
 	}
 	return c.marshal(dumpSystem.Data())
