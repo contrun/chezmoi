@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	version = ""
-	commit  = ""
-	date    = ""
-	builtBy = ""
+	version string
+	commit  string
+	date    string
+	builtBy string
 )
 
 func main() {
