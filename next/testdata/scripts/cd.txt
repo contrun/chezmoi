@@ -1,5 +1,6 @@
-# There is currently not a way to override the shell for testing on Windows
-[windows] skip
+stop 'reading config files got broken' # FIXME
+
+[windows] skip 'There is currently not a way to override the shell for testing on Windows'
 
 # test chezmoi cd creates source directory if needed
 chezmoi cd

@@ -34,10 +34,10 @@ func TestDirAttributes(t *testing.T) {
 	var das []DirAttributes
 	require.NoError(t, combinator.Generate(&das, testData))
 	for _, da := range das {
-		actualSourceName := da.SourceName()
+		actualSourceName := da.BaseName()
 		actualDA := parseDirAttributes(actualSourceName)
 		assert.Equal(t, da, actualDA)
-		assert.Equal(t, actualSourceName, actualDA.SourceName())
+		assert.Equal(t, actualSourceName, actualDA.BaseName())
 	}
 }
 
@@ -90,9 +90,9 @@ func TestFileAttributes(t *testing.T) {
 		},
 	}))
 	for _, fa := range fas {
-		actualSourceName := fa.SourceName()
+		actualSourceName := fa.BaseName()
 		actualFA := parseFileAttributes(actualSourceName)
 		assert.Equal(t, fa, actualFA)
-		assert.Equal(t, actualSourceName, actualFA.SourceName())
+		assert.Equal(t, actualSourceName, actualFA.BaseName())
 	}
 }

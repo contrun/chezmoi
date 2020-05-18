@@ -1,5 +1,5 @@
 General:
-- --recursive is default
+- --recursive is default for some commands
 - only diff format is git
 - remove hg support
 - remove source command (use git instead)
